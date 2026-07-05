@@ -49,6 +49,13 @@ npm run typecheck
 npm run build
 ```
 
+## Sample Videos For Manual Testing
+
+- Deterministic 30 second MP4 files: https://file-examples.com/index.php/sample-video-files/sample-mp4-files/
+- General MP4 samples: https://samplelib.com/sample-mp4.html
+- Creator-style stock clips: https://www.pexels.com/search/videos/creator/
+- Royalty-free creator clips: https://pixabay.com/videos/search/creator/
+
 ## TestSprite
 
 Test plans live in `testsprite/plans/`.
@@ -59,4 +66,8 @@ Create and run the core frontend test:
 testsprite test create --plan-from testsprite/plans/editor-core.plan.json --run --wait --output json
 ```
 
-The GitHub Actions workflow uses `TESTSPRITE_API_KEY` and `TESTSPRITE_PROJECT_ID` repository secrets.
+The GitHub Actions workflow uses these repository secrets:
+
+- `TESTSPRITE_API_KEY`
+- `TESTSPRITE_PROJECT_ID`
+- `TESTSPRITE_TEST_ID`

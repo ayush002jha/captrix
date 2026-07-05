@@ -134,6 +134,11 @@ export function CaptionStudio() {
 
   const coach = useMemo(() => analyzeCaption(caption), [caption]);
   const status = video ? "Clip loaded" : "Ready for a clip";
+  const templateCaptions = [
+    "New drop. New energy.",
+    "Watch this before you post.",
+    "One edit changed the whole clip."
+  ];
 
   function handleVideoChange(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
@@ -304,7 +309,29 @@ export function CaptionStudio() {
           </aside>
         </section>
 
-        <section className="studio-grid" id="editor">
+        <div className="creator-strip" aria-label="Creator proof">
+          <span>Creators are testing hooks</span>
+          <div className="creator-faces" aria-hidden="true">
+            {["AJ", "MK", "SR", "NP", "TV", "LC", "YO"].map((initials) => (
+              <span key={initials}>{initials}</span>
+            ))}
+          </div>
+          <strong>Local AI. Live preview. Export-ready kit.</strong>
+        </div>
+
+        <section className="editor-shell" id="editor" aria-labelledby="editor-title">
+          <div className="studio-intro">
+            <div>
+              <p className="section-kicker">Live editor</p>
+              <h2 id="editor-title">Caption, style, and export from one focused workspace.</h2>
+            </div>
+            <p>
+              The editor keeps every change visible on the clip, so creators can tune captions
+              without bouncing between panels.
+            </p>
+          </div>
+
+          <div className="studio-grid">
           <div className="preview-column">
             <div className={`video-stage ${video ? "has-video" : ""}`} data-testid="video-stage">
               {video ? (
@@ -317,6 +344,26 @@ export function CaptionStudio() {
                   data-testid="video-preview"
                 />
               ) : null}
+              <div className="template-floater" aria-label="Caption templates">
+                <span>Templates</span>
+                {templateCaptions.map((template) => (
+                  <button key={template} type="button" onClick={() => setCaption(template)}>
+                    {template}
+                  </button>
+                ))}
+              </div>
+              <div className="style-floater" aria-label="Quick styles">
+                <span>Styles</span>
+                <button type="button" onClick={() => setStyle("creator")}>
+                  Pop
+                </button>
+                <button type="button" onClick={() => setStyle("neon")}>
+                  Glow
+                </button>
+                <button type="button" onClick={() => setStyle("minimal")}>
+                  Clean
+                </button>
+              </div>
               <div className={`caption-layer ${style} ${position}`} data-testid="caption-overlay">
                 <span>{caption.trim() || "Add a caption to preview it here."}</span>
               </div>
@@ -466,6 +513,7 @@ export function CaptionStudio() {
               </p>
             </section>
           </aside>
+          </div>
         </section>
       </section>
     </main>

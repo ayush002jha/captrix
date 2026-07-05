@@ -13,6 +13,7 @@ jobs:
     env:
       TESTSPRITE_API_KEY: ${{ secrets.TESTSPRITE_API_KEY }}
       TESTSPRITE_PROJECT_ID: ${{ secrets.TESTSPRITE_PROJECT_ID }}
+      TESTSPRITE_TEST_ID: ${{ secrets.TESTSPRITE_TEST_ID }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -21,4 +22,4 @@ jobs:
         run: npm i -g @testsprite/testsprite-cli
 
       - name: Run TestSprite tests
-        run: testsprite test run --all --project "$TESTSPRITE_PROJECT_ID" --wait --output json
+        run: testsprite test run "$TESTSPRITE_TEST_ID" --wait --output json
