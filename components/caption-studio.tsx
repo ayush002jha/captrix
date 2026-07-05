@@ -228,6 +228,7 @@ export function CaptionStudio() {
     "Watch this before you post.",
     "One edit changed the whole clip."
   ];
+  const timelineWidth = Math.max(8, Math.min(100, ((end - start) / MAX_DURATION_SECONDS) * 100));
 
   function handleVideoChange(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
@@ -361,70 +362,17 @@ export function CaptionStudio() {
           </div>
         </header>
 
-        <section className="hero-band">
-          <div className="hero-copy">
-            <p className="creator-pill">AI-powered format studio for creators</p>
-            <h1 id="app-title">
-              Make <span>AI captions</span> feel edited by hand.
-            </h1>
-            <p className="hero-subcopy">
-              Upload a short clip, pick a platform format, tune the hook with a local AI coach,
-              preview punchy caption styles, and export a reusable caption kit.
-            </p>
-            <div className="hero-actions">
-              <a className="primary-link" href="#editor">
-                Start captioning
-              </a>
-              <button className="secondary-link" type="button" onClick={suggestCaption}>
-                Generate hook
-              </button>
-            </div>
-            <div className="hero-checks" aria-label="Captrix benefits">
-              <span>Local AI coach</span>
-              <span>Platform frames</span>
-              <span>Animated styles</span>
-            </div>
-          </div>
-
-          <aside className="phone-preview" aria-label="Mobile caption preview">
-            <div className="phone-shell">
-              <div className="phone-speaker" aria-hidden="true" />
-              <div className="phone-screen">
-                <div className="phone-topline">
-                  <strong>Captrix</strong>
-                  <span>9:41</span>
-                </div>
-                <div className={`mini-stage ${style} ${selectedPlatform.frame}`}>
-                  <span>{caption.trim() || "Make clips pop"}</span>
-                </div>
-                <div className="mini-controls">
-                  <span>{selectedPlatform.shortLabel}</span>
-                  <span>{coach.score}/100</span>
-                </div>
-              </div>
-            </div>
-          </aside>
-        </section>
-
-        <div className="creator-strip" aria-label="Creator proof">
-          <span>Creators are testing hooks</span>
-          <div className="creator-faces" aria-hidden="true">
-            {["AJ", "MK", "SR", "NP", "TV", "LC", "YO"].map((initials) => (
-              <span key={initials}>{initials}</span>
-            ))}
-          </div>
-          <strong>{selectedPlatform.label}. Live preview. Export-ready kit.</strong>
-        </div>
-
-        <section className="editor-shell" id="editor" aria-labelledby="editor-title">
+        <section className="editor-shell" id="editor" aria-labelledby="app-title">
           <div className="studio-intro">
             <div>
-              <p className="section-kicker">Platform-aware editor</p>
-              <h2 id="editor-title">Caption, style, and export from one focused workspace.</h2>
+              <p className="section-kicker">Platform-aware caption studio</p>
+              <h1 id="app-title" className="studio-title">
+                Make captions move.
+              </h1>
             </div>
             <p>
-              The editor keeps every change visible on the clip, so creators can tune captions
-              without bouncing between panels.
+              Pick a format, preview inside the right device frame, tune the caption hook, and export
+              a reusable kit.
             </p>
           </div>
 
@@ -500,6 +448,29 @@ export function CaptionStudio() {
                 <span className="metric-label">Format</span>
                 <strong>{selectedPlatform.shortLabel}</strong>
               </div>
+            </div>
+
+            <div className="studio-lower-grid">
+              <section className="timeline-card" aria-label="Caption timeline">
+                <div className="timeline-heading">
+                  <span>Caption track</span>
+                  <strong>
+                    {start}s - {end}s
+                  </strong>
+                </div>
+                <div className="timeline-rail">
+                  <div className="timeline-segment" style={{ width: `${timelineWidth}%` }}>
+                    {caption.trim() || "Caption segment"}
+                  </div>
+                </div>
+                <p>One caption segment is staged for export. Add more segments in the next loop.</p>
+              </section>
+
+              <section className="spec-card" aria-label="Export specification">
+                <span>Export target</span>
+                <strong>{selectedPlatform.size}</strong>
+                <p>{selectedPlatform.guidance}</p>
+              </section>
             </div>
           </div>
 
