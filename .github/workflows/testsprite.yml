@@ -22,4 +22,6 @@ jobs:
         run: npm i -g @testsprite/testsprite-cli
 
       - name: Run TestSprite tests
-        run: testsprite test run "$TESTSPRITE_TEST_ID" --wait --output json
+        run: |
+          TEST_ID="$(printf '%s' "$TESTSPRITE_TEST_ID" | tr -d '[:space:]')"
+          testsprite test run "$TEST_ID" --wait --output json
