@@ -22,6 +22,7 @@ Captrix will be built in small increments:
 Increment 01 includes:
 
 - Next.js App Router setup.
+- Tailwind CSS studio UI with componentized editor panels.
 - Video upload with file type and duration validation.
 - Caption preview overlay.
 - Platform presets for Instagram Reels, TikTok, YouTube Shorts, Instagram Feed, YouTube long-form, Facebook video, and square posts.
@@ -50,6 +51,8 @@ http://localhost:3000
 npm run typecheck
 npm run build
 ```
+
+`npm run build` may need normal process-spawn permissions because Tailwind/PostCSS uses a worker during production CSS compilation.
 
 ## Sample Videos For Manual Testing
 

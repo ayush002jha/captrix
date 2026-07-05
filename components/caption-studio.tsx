@@ -1,206 +1,13 @@
 "use client";
 
 import { ChangeEvent, useMemo, useRef, useState } from "react";
-
-const MIN_DURATION_SECONDS = 30;
-const MAX_DURATION_SECONDS = 120;
-
-type CaptionStyle = "creator" | "karaoke" | "meme" | "minimal" | "neon";
-type CaptionPosition = "top" | "middle" | "bottom";
-type PlatformKey =
-  | "instagram-reels"
-  | "tiktok"
-  | "youtube-shorts"
-  | "instagram-feed"
-  | "youtube-video"
-  | "facebook-video"
-  | "square-post";
-
-type VideoState = {
-  name: string;
-  duration: number;
-  url: string;
-};
-
-const styleLabels: Record<CaptionStyle, string> = {
-  creator: "Creator Pop",
-  karaoke: "Karaoke",
-  meme: "Meme Stack",
-  minimal: "Minimal",
-  neon: "Neon Punch"
-};
-
-const platformPresets: Record<
-  PlatformKey,
-  {
-    label: string;
-    shortLabel: string;
-    family: "short-form" | "feed" | "long-form";
-    aspectRatio: string;
-    frame: "phone" | "desktop" | "square";
-    size: string;
-    guidance: string;
-  }
-> = {
-  "instagram-reels": {
-    label: "Instagram Reels",
-    shortLabel: "Reels",
-    family: "short-form",
-    aspectRatio: "9 / 16",
-    frame: "phone",
-    size: "1080 x 1920",
-    guidance: "Keep captions inside the center safe zone for UI overlays."
-  },
-  tiktok: {
-    label: "TikTok",
-    shortLabel: "TikTok",
-    family: "short-form",
-    aspectRatio: "9 / 16",
-    frame: "phone",
-    size: "1080 x 1920",
-    guidance: "Use large hooks and avoid the lower-right action rail."
-  },
-  "youtube-shorts": {
-    label: "YouTube Shorts",
-    shortLabel: "Shorts",
-    family: "short-form",
-    aspectRatio: "9 / 16",
-    frame: "phone",
-    size: "1080 x 1920",
-    guidance: "Put the hook high enough to clear title and controls."
-  },
-  "instagram-feed": {
-    label: "Instagram Feed",
-    shortLabel: "Feed",
-    family: "feed",
-    aspectRatio: "4 / 5",
-    frame: "phone",
-    size: "1080 x 1350",
-    guidance: "Balanced framing for feed posts and profile previews."
-  },
-  "youtube-video": {
-    label: "YouTube Long-form",
-    shortLabel: "YouTube",
-    family: "long-form",
-    aspectRatio: "16 / 9",
-    frame: "desktop",
-    size: "1920 x 1080",
-    guidance: "Use lower-third captions that do not cover the subject."
-  },
-  "facebook-video": {
-    label: "Facebook Video",
-    shortLabel: "Facebook",
-    family: "long-form",
-    aspectRatio: "16 / 9",
-    frame: "desktop",
-    size: "1920 x 1080",
-    guidance: "Readable captions matter for muted autoplay feeds."
-  },
-  "square-post": {
-    label: "Square Post",
-    shortLabel: "Square",
-    family: "feed",
-    aspectRatio: "1 / 1",
-    frame: "square",
-    size: "1080 x 1080",
-    guidance: "Best for cross-posted feed clips and thumbnails."
-  }
-};
-
-const platformOrder = Object.keys(platformPresets) as PlatformKey[];
-
-const captionSuggestions = [
-  "Wait for the twist at the end.",
-  "This one change made the whole clip land.",
-  "The fastest way to make this moment clear.",
-  "Watch how the before turns into the after.",
-  "Small detail. Huge difference.",
-  "Here is the part everyone misses.",
-  "Make the first second impossible to skip."
-];
-
-function formatDuration(seconds: number | null) {
-  if (!Number.isFinite(seconds)) {
-    return "--";
-  }
-
-  const safeSeconds = seconds ?? 0;
-  const minutes = Math.floor(safeSeconds / 60);
-  const remainingSeconds = Math.round(safeSeconds % 60)
-    .toString()
-    .padStart(2, "0");
-  return `${minutes}:${remainingSeconds}`;
-}
-
-function validateDuration(duration: number) {
-  if (!Number.isFinite(duration)) {
-    return "We could not read that video duration.";
-  }
-
-  if (duration < MIN_DURATION_SECONDS) {
-    return `Clip is ${formatDuration(duration)}. Captrix needs at least 0:30.`;
-  }
-
-  if (duration > MAX_DURATION_SECONDS) {
-    return `Clip is ${formatDuration(duration)}. Captrix supports clips up to 2:00.`;
-  }
-
-  return null;
-}
-
-function analyzeCaption(text: string) {
-  const normalized = text.trim();
-  const words = normalized.split(/\s+/).filter(Boolean);
-  const lower = normalized.toLowerCase();
-  let score = 44;
-  const signals: string[] = [];
-
-  if (words.length >= 5 && words.length <= 12) {
-    score += 18;
-    signals.push("Readable");
-  } else if (words.length > 12) {
-    score -= 8;
-    signals.push("Trim length");
-  } else {
-    signals.push("Needs detail");
-  }
-
-  if (/how|why|watch|make|stop|start|pov|before|after|fast|easy/.test(lower)) {
-    score += 16;
-    signals.push("Hook-led");
-  }
-
-  if (/[0-9]|one|two|three|first|last|seconds|minutes/.test(lower)) {
-    score += 10;
-    signals.push("Concrete");
-  }
-
-  if (/[.!?]$/.test(normalized)) {
-    score += 5;
-    signals.push("Clean ending");
-  }
-
-  if (normalized.length > 82) {
-    score -= 10;
-  }
-
-  const boundedScore = Math.max(8, Math.min(98, score));
-  const recommendedStyle: CaptionStyle =
-    boundedScore > 84 ? "neon" : lower.includes("pov") ? "neon" : words.length > 10 ? "minimal" : "creator";
-  const summary =
-    boundedScore > 84
-      ? "High-retention caption. Keep it short and let the style do the punch."
-      : boundedScore > 66
-        ? "Strong hook. Add one concrete outcome to make it easier to follow."
-        : "Good start. Make the first words more specific and action-led.";
-
-  return {
-    score: boundedScore,
-    summary,
-    signals: [...signals, `Style: ${styleLabels[recommendedStyle]}`].slice(0, 3),
-    recommendedStyle
-  };
-}
+import { captionSuggestions, platformPresets } from "./studio/data";
+import { InspectorPanel } from "./studio/inspector-panel";
+import { PreviewStage } from "./studio/preview-stage";
+import { TimelinePanel } from "./studio/timeline-panel";
+import { TopBar } from "./studio/top-bar";
+import type { CaptionPosition, CaptionStyle, PlatformKey, Tone, VideoState } from "./studio/types";
+import { analyzeCaption, timelinePercent, validateDuration } from "./studio/utils";
 
 export function CaptionStudio() {
   const [video, setVideo] = useState<VideoState | null>(null);
@@ -212,23 +19,18 @@ export function CaptionStudio() {
   const [end, setEnd] = useState(8);
   const [message, setMessage] = useState({
     text: "No video selected yet.",
-    tone: "neutral" as "neutral" | "error" | "success"
+    tone: "neutral" as Tone
   });
   const [exportMessage, setExportMessage] = useState({
     text: "",
-    tone: "neutral" as "neutral" | "error" | "success"
+    tone: "neutral" as Tone
   });
   const videoRef = useRef<HTMLVideoElement>(null);
 
   const coach = useMemo(() => analyzeCaption(caption), [caption]);
   const selectedPlatform = platformPresets[platform];
   const status = video ? "Clip loaded" : "Ready for a clip";
-  const templateCaptions = [
-    "New drop. New energy.",
-    "Watch this before you post.",
-    "One edit changed the whole clip."
-  ];
-  const timelineWidth = Math.max(8, Math.min(100, ((end - start) / MAX_DURATION_SECONDS) * 100));
+  const trackWidth = timelinePercent(start, end);
 
   function handleVideoChange(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
@@ -341,289 +143,75 @@ export function CaptionStudio() {
   }
 
   return (
-    <main className="app-shell">
-      <section className="workspace" aria-labelledby="app-title">
-        <header className="topbar">
-          <div className="brand-lockup" aria-label="Captrix AI">
-            <span className="brand-mark" aria-hidden="true">
-              C
-            </span>
-            <strong>Captrix AI</strong>
-          </div>
-          <nav className="topnav" aria-label="Product">
-            <a href="#editor">Editor</a>
-            <a href="#styles">Styles</a>
-            <a href="#export">Export</a>
-          </nav>
-          <div className="topbar-actions">
-            <div className="status-pill" aria-live="polite" data-testid="project-status">
-              {status}
-            </div>
-          </div>
-        </header>
+    <main className="h-[100svh] overflow-hidden bg-[#050509] text-white">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_18%,rgba(233,255,18,0.16),transparent_24%),radial-gradient(circle_at_86%_10%,rgba(0,245,212,0.16),transparent_28%),linear-gradient(135deg,#050509_0%,#0b1020_48%,#050509_100%)]" />
+      <div className="relative grid h-full min-h-0 grid-rows-[56px_minmax(0,1fr)]">
+        <TopBar status={status} />
 
-        <section className="editor-shell" id="editor" aria-labelledby="app-title">
-          <div className="studio-intro">
+        <section className="grid min-h-0 gap-3 p-3" id="editor" aria-labelledby="app-title">
+          <div className="flex min-h-0 items-center justify-between gap-4 rounded-[1.75rem] border border-white/10 bg-white/[0.07] px-5 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-xl">
             <div>
-              <p className="section-kicker">Platform-aware caption studio</p>
-              <h1 id="app-title" className="studio-title">
+              <p className="text-[11px] font-black uppercase text-[#e9ff12]">Platform-aware caption studio</p>
+              <h1 id="app-title" className="mt-1 text-2xl font-black leading-none tracking-normal text-white">
                 Make captions move.
               </h1>
             </div>
-            <p>
-              Pick a format, preview inside the right device frame, tune the caption hook, and export
-              a reusable kit.
+            <p className="hidden max-w-[34rem] text-sm leading-5 text-white/55 lg:block">
+              Pick a format, preview inside a device frame, tune the caption hook, and export a reusable kit.
             </p>
           </div>
 
-          <div className="studio-grid">
-          <div className="preview-column">
-            <div className={`format-frame ${selectedPlatform.frame}`}>
-              <div className="format-chrome" aria-hidden="true">
-                <span>{selectedPlatform.shortLabel}</span>
-                <strong>{selectedPlatform.size}</strong>
-              </div>
-              <div
-                className={`video-stage ${video ? "has-video" : ""} ${selectedPlatform.frame}`}
-                data-testid="video-stage"
-                style={{ aspectRatio: selectedPlatform.aspectRatio }}
-              >
-              {video ? (
-                <video
-                  ref={videoRef}
-                  src={video.url}
-                  controls
-                  playsInline
-                  preload="metadata"
-                  data-testid="video-preview"
-                />
-              ) : null}
-              <div className="template-floater" aria-label="Caption templates">
-                <span>Templates</span>
-                {templateCaptions.map((template) => (
-                  <button key={template} type="button" onClick={() => setCaption(template)}>
-                    {template}
-                  </button>
-                ))}
-              </div>
-              <div className="style-floater" aria-label="Quick styles">
-                <span>Styles</span>
-                <button type="button" onClick={() => setStyle("creator")}>
-                  Pop
-                </button>
-                <button type="button" onClick={() => setStyle("neon")}>
-                  Glow
-                </button>
-                <button type="button" onClick={() => setStyle("minimal")}>
-                  Clean
-                </button>
-              </div>
-              <div className={`caption-layer ${style} ${position}`} data-testid="caption-overlay">
-                <span>{caption.trim() || "Add a caption to preview it here."}</span>
-              </div>
-              {!video ? (
-                <div className="stage-empty">
-                  <strong>Drop in a {selectedPlatform.shortLabel} clip</strong>
-                  <span>{selectedPlatform.size}. 30 seconds to 2 minutes, MP4/WebM/MOV.</span>
-                </div>
-              ) : null}
-              <div className="safe-zone" aria-hidden="true" />
-              </div>
-            </div>
-
-            <div className="playback-panel">
-              <div>
-                <span className="metric-label">Duration</span>
-                <strong>{formatDuration(video?.duration ?? null)}</strong>
-              </div>
-              <div>
-                <span className="metric-label">Active Style</span>
-                <strong>{styleLabels[style]}</strong>
-              </div>
-              <div>
-                <span className="metric-label">Segments</span>
-                <strong>{caption.trim() ? "1" : "0"}</strong>
-              </div>
-              <div>
-                <span className="metric-label">Format</span>
-                <strong>{selectedPlatform.shortLabel}</strong>
-              </div>
-            </div>
-
-            <div className="studio-lower-grid">
-              <section className="timeline-card" aria-label="Caption timeline">
-                <div className="timeline-heading">
-                  <span>Caption track</span>
-                  <strong>
-                    {start}s - {end}s
-                  </strong>
-                </div>
-                <div className="timeline-rail">
-                  <div className="timeline-segment" style={{ width: `${timelineWidth}%` }}>
-                    {caption.trim() || "Caption segment"}
-                  </div>
-                </div>
-                <p>One caption segment is staged for export. Add more segments in the next loop.</p>
-              </section>
-
-              <section className="spec-card" aria-label="Export specification">
-                <span>Export target</span>
-                <strong>{selectedPlatform.size}</strong>
-                <p>{selectedPlatform.guidance}</p>
-              </section>
-            </div>
-          </div>
-
-          <aside className="controls-panel" aria-label="Caption controls">
-            <section className="panel-section platform-panel">
-              <div className="section-heading">
-                <h2>Platform</h2>
-                <span className="format-size">{selectedPlatform.size}</span>
-              </div>
-              <div className="platform-options" role="radiogroup" aria-label="Platform format">
-                {platformOrder.map((platformName) => {
-                  const preset = platformPresets[platformName];
-                  return (
-                    <button
-                      className={`platform-button ${platform === platformName ? "active" : ""}`}
-                      type="button"
-                      data-testid={`platform-${platformName}`}
-                      key={platformName}
-                      onClick={() => setPlatform(platformName)}
-                    >
-                      <strong>{preset.shortLabel}</strong>
-                      <span>{preset.aspectRatio}</span>
-                    </button>
-                  );
-                })}
-              </div>
-              <p className="platform-guidance">{selectedPlatform.guidance}</p>
-            </section>
-
-            <section className="panel-section" id="styles">
-              <label className="upload-zone" htmlFor="videoInput">
-                <input id="videoInput" type="file" accept="video/*" data-testid="video-input" onChange={handleVideoChange} />
-                <span className="upload-icon" aria-hidden="true">
-                  +
-                </span>
-                <span>
-                  <strong>Choose video</strong>
-                  <small>Validated locally before editing</small>
-                </span>
-              </label>
-              <p className={`validation-message ${message.tone}`} role="status">
-                {message.text}
-              </p>
-            </section>
-
-            <section className="panel-section">
-              <div className="section-heading">
-                <h2>Caption</h2>
-                <button className="icon-button" type="button" title="Suggest caption" data-testid="ai-suggest" onClick={suggestCaption}>
-                  AI
-                </button>
-              </div>
-              <textarea
-                value={caption}
-                data-testid="caption-input"
-                rows={3}
-                maxLength={120}
-                placeholder="Type a bold short caption..."
-                onChange={(event) => setCaption(event.target.value)}
-              />
-
-              <div className="field-grid">
-                <label>
-                  Start
-                  <input type="number" min={0} max={120} value={start} step={0.5} onChange={(event) => setStart(Number(event.target.value))} />
-                </label>
-                <label>
-                  End
-                  <input type="number" min={0.5} max={120} value={end} step={0.5} onChange={(event) => setEnd(Number(event.target.value))} />
-                </label>
-              </div>
-            </section>
-
-            <section className="panel-section ai-panel" aria-label="Local AI caption coach">
-              <div className="section-heading">
-                <h2>Local AI coach</h2>
-                <span className="coach-score" data-testid="ai-score">
-                  {coach.score}
-                </span>
-              </div>
-              <p className="coach-summary" data-testid="ai-summary">
-                {coach.summary}
-              </p>
-              <div className="coach-signals" aria-label="Caption quality signals">
-                {coach.signals.map((signal) => (
-                  <span key={signal}>{signal}</span>
-                ))}
-              </div>
-            </section>
-
-            <section className="panel-section">
-              <div className="section-heading">
-                <h2>Style</h2>
+          <div className="grid min-h-0 grid-cols-[88px_minmax(0,1fr)_390px] gap-3">
+            <aside className="grid content-start gap-3 rounded-[1.75rem] border border-white/10 bg-white/[0.07] p-3 backdrop-blur-xl" aria-label="Studio tools">
+              {["Scene", "Frame", "Caption", "Export"].map((item, index) => (
                 <button
-                  className="ghost-button"
+                  className={`grid size-14 place-items-center rounded-2xl border text-[10px] font-black transition ${index === 2 ? "border-[#e9ff12] bg-[#e9ff12] text-black" : "border-white/10 bg-white/[0.06] text-white/65 hover:bg-white/[0.12]"}`}
+                  key={item}
                   type="button"
-                  onClick={() => {
-                    const styles = Object.keys(styleLabels) as CaptionStyle[];
-                    setStyle(styles[Math.floor(Math.random() * styles.length)]);
-                  }}
                 >
-                  Shuffle
+                  {item}
                 </button>
-              </div>
-              <div className="style-options" role="radiogroup" aria-label="Caption style">
-                {(Object.keys(styleLabels) as CaptionStyle[]).map((styleName) => (
-                  <button
-                    className={`style-chip ${style === styleName ? "active" : ""}`}
-                    type="button"
-                    data-testid={`style-${styleName}`}
-                    data-style={styleName}
-                    key={styleName}
-                    onClick={() => setStyle(styleName)}
-                  >
-                    {styleLabels[styleName]}
-                  </button>
-                ))}
-              </div>
+              ))}
+            </aside>
+
+            <section className="grid min-h-0 grid-rows-[minmax(0,1fr)_auto] gap-3">
+              <PreviewStage
+                video={video}
+                caption={caption}
+                style={style}
+                position={position}
+                platform={selectedPlatform}
+                setCaption={setCaption}
+                setStyle={setStyle}
+              />
+              <TimelinePanel caption={caption} start={start} end={end} width={trackWidth} platform={selectedPlatform} />
             </section>
 
-            <section className="panel-section">
-              <h2>Position</h2>
-              <div className="position-options" role="radiogroup" aria-label="Caption position">
-                {(["top", "middle", "bottom"] as CaptionPosition[]).map((positionName) => (
-                  <button
-                    className={`position-button ${position === positionName ? "active" : ""}`}
-                    type="button"
-                    data-testid={`position-${positionName}`}
-                    data-position={positionName}
-                    key={positionName}
-                    onClick={() => setPosition(positionName)}
-                  >
-                    {positionName[0].toUpperCase() + positionName.slice(1)}
-                  </button>
-                ))}
-              </div>
-            </section>
-
-            <section className="panel-section export-section" id="export">
-              <button className="primary-button" type="button" data-testid="export-kit" onClick={exportCaptionKit}>
-                Export caption kit
-              </button>
-              <button className="secondary-button" type="button" data-testid="reset-studio" onClick={resetStudio}>
-                Reset studio
-              </button>
-              <p className={`validation-message ${exportMessage.tone}`} role="status">
-                {exportMessage.text}
-              </p>
-            </section>
-          </aside>
+            <InspectorPanel
+              caption={caption}
+              style={style}
+              position={position}
+              platform={platform}
+              selectedPlatform={selectedPlatform}
+              coach={coach}
+              message={message}
+              exportMessage={exportMessage}
+              start={start}
+              end={end}
+              onVideoChange={handleVideoChange}
+              setCaption={setCaption}
+              setStyle={setStyle}
+              setPosition={setPosition}
+              setPlatform={setPlatform}
+              setStart={setStart}
+              setEnd={setEnd}
+              suggestCaption={suggestCaption}
+              exportCaptionKit={exportCaptionKit}
+              resetStudio={resetStudio}
+            />
           </div>
         </section>
-      </section>
+      </div>
     </main>
   );
 }
