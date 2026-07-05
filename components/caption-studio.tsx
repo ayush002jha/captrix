@@ -241,16 +241,70 @@ export function CaptionStudio() {
     <main className="app-shell">
       <section className="workspace" aria-labelledby="app-title">
         <header className="topbar">
-          <div>
-            <p className="eyebrow">Captrix</p>
-            <h1 id="app-title">Make captions move.</h1>
+          <div className="brand-lockup" aria-label="Captrix AI">
+            <span className="brand-mark" aria-hidden="true">
+              C
+            </span>
+            <strong>Captrix AI</strong>
           </div>
-          <div className="status-pill" aria-live="polite" data-testid="project-status">
-            {status}
+          <nav className="topnav" aria-label="Product">
+            <a href="#editor">Editor</a>
+            <a href="#styles">Styles</a>
+            <a href="#export">Export</a>
+          </nav>
+          <div className="topbar-actions">
+            <div className="status-pill" aria-live="polite" data-testid="project-status">
+              {status}
+            </div>
           </div>
         </header>
 
-        <section className="studio-grid">
+        <section className="hero-band">
+          <div className="hero-copy">
+            <p className="creator-pill">AI-powered tool for short-form creators</p>
+            <h1 id="app-title">
+              Make <span>AI captions</span> feel edited by hand.
+            </h1>
+            <p className="hero-subcopy">
+              Upload a short clip, tune the hook with a local AI coach, preview punchy caption
+              styles, and export a reusable caption kit.
+            </p>
+            <div className="hero-actions">
+              <a className="primary-link" href="#editor">
+                Start captioning
+              </a>
+              <button className="secondary-link" type="button" onClick={suggestCaption}>
+                Generate hook
+              </button>
+            </div>
+            <div className="hero-checks" aria-label="Captrix benefits">
+              <span>Local AI coach</span>
+              <span>Animated styles</span>
+              <span>No heavy editor</span>
+            </div>
+          </div>
+
+          <aside className="phone-preview" aria-label="Mobile caption preview">
+            <div className="phone-shell">
+              <div className="phone-speaker" aria-hidden="true" />
+              <div className="phone-screen">
+                <div className="phone-topline">
+                  <strong>Captrix</strong>
+                  <span>9:41</span>
+                </div>
+                <div className={`mini-stage ${style}`}>
+                  <span>{caption.trim() || "Make clips pop"}</span>
+                </div>
+                <div className="mini-controls">
+                  <span>{styleLabels[style]}</span>
+                  <span>{coach.score}/100</span>
+                </div>
+              </div>
+            </div>
+          </aside>
+        </section>
+
+        <section className="studio-grid" id="editor">
           <div className="preview-column">
             <div className={`video-stage ${video ? "has-video" : ""}`} data-testid="video-stage">
               {video ? (
@@ -291,7 +345,7 @@ export function CaptionStudio() {
           </div>
 
           <aside className="controls-panel" aria-label="Caption controls">
-            <section className="panel-section">
+            <section className="panel-section" id="styles">
               <label className="upload-zone" htmlFor="videoInput">
                 <input id="videoInput" type="file" accept="video/*" data-testid="video-input" onChange={handleVideoChange} />
                 <span className="upload-icon" aria-hidden="true">
@@ -400,7 +454,7 @@ export function CaptionStudio() {
               </div>
             </section>
 
-            <section className="panel-section export-section">
+            <section className="panel-section export-section" id="export">
               <button className="primary-button" type="button" data-testid="export-kit" onClick={exportCaptionKit}>
                 Export caption kit
               </button>

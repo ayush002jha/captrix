@@ -1,0 +1,49 @@
+{
+  "projectId": "c91f693d-84bd-4ea7-8178-35352c93e8dc",
+  "type": "frontend",
+  "name": "Captrix editor core flow",
+  "description": "Verifies the first Captrix AI editor slice: page load, caption editing, local AI coach, style controls, and export guard.",
+  "priority": "p0",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Open https://captrix-ai.vercel.app/."
+    },
+    {
+      "type": "assertion",
+      "description": "The Captrix AI editor loads, the main heading contains 'Make captions move.', and data-testid=project-status, data-testid=video-input, data-testid=caption-input, data-testid=style-creator, data-testid=position-middle, and data-testid=export-kit are visible."
+    },
+    {
+      "type": "action",
+      "description": "Replace data-testid=caption-input with 'Launch clips faster with styled captions.'."
+    },
+    {
+      "type": "assertion",
+      "description": "data-testid=caption-overlay updates with 'Launch clips faster with styled captions.'."
+    },
+    {
+      "type": "action",
+      "description": "Click data-testid=style-karaoke, then click data-testid=position-bottom."
+    },
+    {
+      "type": "assertion",
+      "description": "The active style metric shows Karaoke and the caption remains visible on the video stage."
+    },
+    {
+      "type": "action",
+      "description": "Click data-testid=ai-suggest."
+    },
+    {
+      "type": "assertion",
+      "description": "The caption textarea changes, a success message mentions the local caption AI suggestion, and data-testid=ai-score plus data-testid=ai-summary are visible."
+    },
+    {
+      "type": "action",
+      "description": "Click data-testid=reset-studio, then click data-testid=export-kit without uploading a video."
+    },
+    {
+      "type": "assertion",
+      "description": "The app prevents export and shows that a valid clip is required before exporting."
+    }
+  ]
+}

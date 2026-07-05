@@ -2,7 +2,9 @@
 
 Captrix is a browser-based caption studio for short creator videos. Users upload a 30 second to 2 minute clip, add editable captions, preview animated caption styles, get a local AI caption score, and export a caption kit.
 
-Live URL: _add Vercel URL after first deployment_
+Live URL: https://captrix-ai.vercel.app/
+
+TestSprite project: `c91f693d-84bd-4ea7-8178-35352c93e8dc`
 
 ## Hackathon Loop Strategy
 
@@ -51,11 +53,10 @@ npm run build
 
 Test plans live in `testsprite/plans/`.
 
-After the first Vercel deployment:
+Create and run the core frontend test:
 
 ```bash
-testsprite project create --type frontend --name "Captrix" --url https://your-vercel-url.vercel.app
-testsprite test run --all --project "$TESTSPRITE_PROJECT_ID" --wait --output json
+testsprite test create --plan-from testsprite/plans/editor-core.plan.json --run --wait --output json
 ```
 
 The GitHub Actions workflow uses `TESTSPRITE_API_KEY` and `TESTSPRITE_PROJECT_ID` repository secrets.
