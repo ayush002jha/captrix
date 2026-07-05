@@ -1,0 +1,24 @@
+name: TestSprite
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  testsprite:
+    runs-on: ubuntu-latest
+    env:
+      TESTSPRITE_API_KEY: ${{ secrets.TESTSPRITE_API_KEY }}
+      TESTSPRITE_PROJECT_ID: ${{ secrets.TESTSPRITE_PROJECT_ID }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install TestSprite CLI
+        run: npm i -g @testsprite/testsprite-cli
+
+      - name: Run TestSprite tests
+        run: testsprite test run --all --project "$TESTSPRITE_PROJECT_ID" --wait --output json

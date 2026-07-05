@@ -1,0 +1,11 @@
+node_modules/
+.next/
+out/
+.vercel/
+.env
+.env.*
+!.env.example
+.DS_Store
+*.log
+.testsprite/failure/
+tsconfig.tsbuildinfo
