@@ -9,7 +9,7 @@ Run this plan against the deployed Vercel URL.
 1. Open the Captrix live URL.
 2. Verify the main heading contains "Make captions move."
 3. Verify `data-testid=project-status` says the app is ready for a clip.
-4. Verify `data-testid=video-input`, `data-testid=caption-input`, `data-testid=style-creator`, `data-testid=position-middle`, and `data-testid=export-kit` are visible.
+4. Verify `data-testid=platform-instagram-reels`, `data-testid=platform-youtube-video`, `data-testid=video-input`, `data-testid=caption-input`, `data-testid=style-creator`, `data-testid=position-middle`, and `data-testid=export-kit` are visible.
 
 Expected result: The editor is usable without authentication.
 
@@ -23,6 +23,15 @@ Expected result: The editor is usable without authentication.
 6. Verify the caption remains visible on the video stage.
 
 Expected result: Caption text, style, and position update without a page reload.
+
+## Flow 2B: Platform Format Switching
+
+1. Click `data-testid=platform-youtube-video`.
+2. Verify the format metric or platform guidance updates to YouTube.
+3. Click `data-testid=platform-instagram-reels`.
+4. Verify the format metric or platform guidance updates back to Reels.
+
+Expected result: Platform presets change the preview format without losing the current caption.
 
 ## Flow 3: Local Caption AI
 

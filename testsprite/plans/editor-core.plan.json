@@ -11,7 +11,7 @@
     },
     {
       "type": "assertion",
-      "description": "The Captrix AI editor loads, the main heading contains 'Make captions move.', and data-testid=project-status, data-testid=video-input, data-testid=caption-input, data-testid=style-creator, data-testid=position-middle, and data-testid=export-kit are visible."
+      "description": "The Captrix AI editor loads, the main heading contains 'Make captions move.', and data-testid=project-status, data-testid=platform-instagram-reels, data-testid=platform-youtube-video, data-testid=video-input, data-testid=caption-input, data-testid=style-creator, data-testid=position-middle, and data-testid=export-kit are visible."
     },
     {
       "type": "action",
@@ -28,6 +28,14 @@
     {
       "type": "assertion",
       "description": "The active style metric shows Karaoke and the caption remains visible on the video stage."
+    },
+    {
+      "type": "action",
+      "description": "Click data-testid=platform-youtube-video, then click data-testid=platform-instagram-reels."
+    },
+    {
+      "type": "assertion",
+      "description": "The platform guidance and format metric update after each preset change, and the caption remains visible."
     },
     {
       "type": "action",

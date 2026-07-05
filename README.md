@@ -24,9 +24,11 @@ Increment 01 includes:
 - Next.js App Router setup.
 - Video upload with file type and duration validation.
 - Caption preview overlay.
+- Platform presets for Instagram Reels, TikTok, YouTube Shorts, Instagram Feed, YouTube long-form, Facebook video, and square posts.
+- Device-aware preview frames for mobile, desktop, and square formats.
 - Caption style and position controls.
 - Local browser-only caption coach.
-- Export guard and caption kit JSON export.
+- Export guard and caption kit JSON export with platform metadata.
 - Stable `data-testid` hooks for TestSprite.
 
 ## Local Development

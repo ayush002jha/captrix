@@ -7,6 +7,14 @@ const MAX_DURATION_SECONDS = 120;
 
 type CaptionStyle = "creator" | "karaoke" | "meme" | "minimal" | "neon";
 type CaptionPosition = "top" | "middle" | "bottom";
+type PlatformKey =
+  | "instagram-reels"
+  | "tiktok"
+  | "youtube-shorts"
+  | "instagram-feed"
+  | "youtube-video"
+  | "facebook-video"
+  | "square-post";
 
 type VideoState = {
   name: string;
@@ -21,6 +29,85 @@ const styleLabels: Record<CaptionStyle, string> = {
   minimal: "Minimal",
   neon: "Neon Punch"
 };
+
+const platformPresets: Record<
+  PlatformKey,
+  {
+    label: string;
+    shortLabel: string;
+    family: "short-form" | "feed" | "long-form";
+    aspectRatio: string;
+    frame: "phone" | "desktop" | "square";
+    size: string;
+    guidance: string;
+  }
+> = {
+  "instagram-reels": {
+    label: "Instagram Reels",
+    shortLabel: "Reels",
+    family: "short-form",
+    aspectRatio: "9 / 16",
+    frame: "phone",
+    size: "1080 x 1920",
+    guidance: "Keep captions inside the center safe zone for UI overlays."
+  },
+  tiktok: {
+    label: "TikTok",
+    shortLabel: "TikTok",
+    family: "short-form",
+    aspectRatio: "9 / 16",
+    frame: "phone",
+    size: "1080 x 1920",
+    guidance: "Use large hooks and avoid the lower-right action rail."
+  },
+  "youtube-shorts": {
+    label: "YouTube Shorts",
+    shortLabel: "Shorts",
+    family: "short-form",
+    aspectRatio: "9 / 16",
+    frame: "phone",
+    size: "1080 x 1920",
+    guidance: "Put the hook high enough to clear title and controls."
+  },
+  "instagram-feed": {
+    label: "Instagram Feed",
+    shortLabel: "Feed",
+    family: "feed",
+    aspectRatio: "4 / 5",
+    frame: "phone",
+    size: "1080 x 1350",
+    guidance: "Balanced framing for feed posts and profile previews."
+  },
+  "youtube-video": {
+    label: "YouTube Long-form",
+    shortLabel: "YouTube",
+    family: "long-form",
+    aspectRatio: "16 / 9",
+    frame: "desktop",
+    size: "1920 x 1080",
+    guidance: "Use lower-third captions that do not cover the subject."
+  },
+  "facebook-video": {
+    label: "Facebook Video",
+    shortLabel: "Facebook",
+    family: "long-form",
+    aspectRatio: "16 / 9",
+    frame: "desktop",
+    size: "1920 x 1080",
+    guidance: "Readable captions matter for muted autoplay feeds."
+  },
+  "square-post": {
+    label: "Square Post",
+    shortLabel: "Square",
+    family: "feed",
+    aspectRatio: "1 / 1",
+    frame: "square",
+    size: "1080 x 1080",
+    guidance: "Best for cross-posted feed clips and thumbnails."
+  }
+};
+
+const platformOrder = Object.keys(platformPresets) as PlatformKey[];
 
 const captionSuggestions = [
   "Wait for the twist at the end.",
@@ -120,6 +207,7 @@ export function CaptionStudio() {
   const [caption, setCaption] = useState("Turn rough clips into scroll-stopping captions.");
   const [style, setStyle] = useState<CaptionStyle>("creator");
   const [position, setPosition] = useState<CaptionPosition>("middle");
+  const [platform, setPlatform] = useState<PlatformKey>("instagram-reels");
   const [start, setStart] = useState(0);
   const [end, setEnd] = useState(8);
   const [message, setMessage] = useState({
@@ -133,6 +221,7 @@ export function CaptionStudio() {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   const coach = useMemo(() => analyzeCaption(caption), [caption]);
+  const selectedPlatform = platformPresets[platform];
   const status = video ? "Clip loaded" : "Ready for a clip";
   const templateCaptions = [
     "New drop. New energy.",
@@ -201,6 +290,13 @@ export function CaptionStudio() {
         name: video.name,
         durationSeconds: Number(video.duration.toFixed(2))
       },
+      platform: {
+        id: platform,
+        name: selectedPlatform.label,
+        aspectRatio: selectedPlatform.aspectRatio,
+        exportSize: selectedPlatform.size,
+        guidance: selectedPlatform.guidance
+      },
       captions: [
         {
           text: caption,
@@ -233,6 +329,7 @@ export function CaptionStudio() {
     setCaption("Turn rough clips into scroll-stopping captions.");
     setStyle("creator");
     setPosition("middle");
+    setPlatform("instagram-reels");
     setStart(0);
     setEnd(8);
     setMessage({
@@ -266,13 +363,13 @@ export function CaptionStudio() {
 
         <section className="hero-band">
           <div className="hero-copy">
-            <p className="creator-pill">AI-powered tool for short-form creators</p>
+            <p className="creator-pill">AI-powered format studio for creators</p>
             <h1 id="app-title">
               Make <span>AI captions</span> feel edited by hand.
             </h1>
             <p className="hero-subcopy">
-              Upload a short clip, tune the hook with a local AI coach, preview punchy caption
-              styles, and export a reusable caption kit.
+              Upload a short clip, pick a platform format, tune the hook with a local AI coach,
+              preview punchy caption styles, and export a reusable caption kit.
             </p>
             <div className="hero-actions">
               <a className="primary-link" href="#editor">
@@ -284,8 +381,8 @@ export function CaptionStudio() {
             </div>
             <div className="hero-checks" aria-label="Captrix benefits">
               <span>Local AI coach</span>
+              <span>Platform frames</span>
               <span>Animated styles</span>
-              <span>No heavy editor</span>
             </div>
           </div>
 
@@ -297,11 +394,11 @@ export function CaptionStudio() {
                   <strong>Captrix</strong>
                   <span>9:41</span>
                 </div>
-                <div className={`mini-stage ${style}`}>
+                <div className={`mini-stage ${style} ${selectedPlatform.frame}`}>
                   <span>{caption.trim() || "Make clips pop"}</span>
                 </div>
                 <div className="mini-controls">
-                  <span>{styleLabels[style]}</span>
+                  <span>{selectedPlatform.shortLabel}</span>
                   <span>{coach.score}/100</span>
                 </div>
               </div>
@@ -316,13 +413,13 @@ export function CaptionStudio() {
               <span key={initials}>{initials}</span>
             ))}
           </div>
-          <strong>Local AI. Live preview. Export-ready kit.</strong>
+          <strong>{selectedPlatform.label}. Live preview. Export-ready kit.</strong>
         </div>
 
         <section className="editor-shell" id="editor" aria-labelledby="editor-title">
           <div className="studio-intro">
             <div>
-              <p className="section-kicker">Live editor</p>
+              <p className="section-kicker">Platform-aware editor</p>
               <h2 id="editor-title">Caption, style, and export from one focused workspace.</h2>
             </div>
             <p>
@@ -333,7 +430,16 @@ export function CaptionStudio() {
 
           <div className="studio-grid">
           <div className="preview-column">
-            <div className={`video-stage ${video ? "has-video" : ""}`} data-testid="video-stage">
+            <div className={`format-frame ${selectedPlatform.frame}`}>
+              <div className="format-chrome" aria-hidden="true">
+                <span>{selectedPlatform.shortLabel}</span>
+                <strong>{selectedPlatform.size}</strong>
+              </div>
+              <div
+                className={`video-stage ${video ? "has-video" : ""} ${selectedPlatform.frame}`}
+                data-testid="video-stage"
+                style={{ aspectRatio: selectedPlatform.aspectRatio }}
+              >
               {video ? (
                 <video
                   ref={videoRef}
@@ -369,10 +475,12 @@ export function CaptionStudio() {
               </div>
               {!video ? (
                 <div className="stage-empty">
-                  <strong>Drop in a creator clip</strong>
-                  <span>30 seconds to 2 minutes, MP4/WebM/MOV.</span>
+                  <strong>Drop in a {selectedPlatform.shortLabel} clip</strong>
+                  <span>{selectedPlatform.size}. 30 seconds to 2 minutes, MP4/WebM/MOV.</span>
                 </div>
               ) : null}
+              <div className="safe-zone" aria-hidden="true" />
+              </div>
             </div>
 
             <div className="playback-panel">
@@ -388,10 +496,39 @@ export function CaptionStudio() {
                 <span className="metric-label">Segments</span>
                 <strong>{caption.trim() ? "1" : "0"}</strong>
               </div>
+              <div>
+                <span className="metric-label">Format</span>
+                <strong>{selectedPlatform.shortLabel}</strong>
+              </div>
             </div>
           </div>
 
           <aside className="controls-panel" aria-label="Caption controls">
+            <section className="panel-section platform-panel">
+              <div className="section-heading">
+                <h2>Platform</h2>
+                <span className="format-size">{selectedPlatform.size}</span>
+              </div>
+              <div className="platform-options" role="radiogroup" aria-label="Platform format">
+                {platformOrder.map((platformName) => {
+                  const preset = platformPresets[platformName];
+                  return (
+                    <button
+                      className={`platform-button ${platform === platformName ? "active" : ""}`}
+                      type="button"
+                      data-testid={`platform-${platformName}`}
+                      key={platformName}
+                      onClick={() => setPlatform(platformName)}
+                    >
+                      <strong>{preset.shortLabel}</strong>
+                      <span>{preset.aspectRatio}</span>
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="platform-guidance">{selectedPlatform.guidance}</p>
+            </section>
+
             <section className="panel-section" id="styles">
               <label className="upload-zone" htmlFor="videoInput">
                 <input id="videoInput" type="file" accept="video/*" data-testid="video-input" onChange={handleVideoChange} />
