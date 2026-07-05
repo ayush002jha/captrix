@@ -1,19 +1,26 @@
 "use client";
 
-import { ChangeEvent, useMemo, useRef, useState } from "react";
+import { ChangeEvent, useMemo, useState } from "react";
+import { Captions, Download, Film, Frame, Sparkles } from "lucide-react";
+import { generateClientCaptionSegments } from "./studio/client-transcription";
 import { captionSuggestions, platformPresets } from "./studio/data";
 import { InspectorPanel } from "./studio/inspector-panel";
 import { PreviewStage } from "./studio/preview-stage";
 import { TimelinePanel } from "./studio/timeline-panel";
 import { TopBar } from "./studio/top-bar";
-import type { CaptionPosition, CaptionStyle, PlatformKey, Tone, VideoState } from "./studio/types";
+import type { CaptionPosition, CaptionSegment, CaptionStyle, PlatformKey, Tone, VideoState } from "./studio/types";
 import { analyzeCaption, timelinePercent, validateDuration } from "./studio/utils";
 
 export function CaptionStudio() {
   const [video, setVideo] = useState<VideoState | null>(null);
-  const [caption, setCaption] = useState("Turn rough clips into scroll-stopping captions.");
+  const [caption, setCaption] = useState("");
+  const [segments, setSegments] = useState<CaptionSegment[]>([]);
+  const [activeSegmentId, setActiveSegmentId] = useState<string | null>(null);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [seekRequest, setSeekRequest] = useState({ time: 0, nonce: 0 });
   const [style, setStyle] = useState<CaptionStyle>("creator");
-  const [position, setPosition] = useState<CaptionPosition>("middle");
+  const [position, setPosition] = useState<CaptionPosition>("bottom");
+  const [captionSize, setCaptionSize] = useState(30);
   const [platform, setPlatform] = useState<PlatformKey>("instagram-reels");
   const [start, setStart] = useState(0);
   const [end, setEnd] = useState(8);
@@ -25,12 +32,70 @@ export function CaptionStudio() {
     text: "",
     tone: "neutral" as Tone
   });
-  const videoRef = useRef<HTMLVideoElement>(null);
-
+  const [transcriptionStatus, setTranscriptionStatus] = useState("Upload a clip, then generate captions with hosted AI or local fallback.");
+  const [isGeneratingCaptions, setIsGeneratingCaptions] = useState(false);
   const coach = useMemo(() => analyzeCaption(caption), [caption]);
   const selectedPlatform = platformPresets[platform];
   const status = video ? "Clip loaded" : "Ready for a clip";
   const trackWidth = timelinePercent(start, end);
+  const playbackSegment = useMemo(
+    () => segments.find((segment) => currentTime >= segment.start && currentTime < segment.end) ?? null,
+    [currentTime, segments]
+  );
+  const selectedSegment = useMemo(
+    () => segments.find((segment) => segment.id === activeSegmentId) ?? null,
+    [activeSegmentId, segments]
+  );
+  const previewCaption = segments.length > 0 ? playbackSegment?.text ?? selectedSegment?.text ?? "" : caption;
+  const activeTimelineSegmentId = playbackSegment?.id ?? activeSegmentId;
+
+  function syncActiveSegment(nextSegment: Partial<CaptionSegment>) {
+    if (!activeSegmentId) {
+      return;
+    }
+
+    setSegments((currentSegments) =>
+      currentSegments.map((segment) => (segment.id === activeSegmentId ? { ...segment, ...nextSegment } : segment))
+    );
+  }
+
+  function updateCaption(nextCaption: string) {
+    setCaption(nextCaption);
+    syncActiveSegment({ text: nextCaption });
+  }
+
+  function updateStart(nextStart: number) {
+    setStart(nextStart);
+    syncActiveSegment({ start: nextStart });
+  }
+
+  function updateEnd(nextEnd: number) {
+    setEnd(nextEnd);
+    syncActiveSegment({ end: nextEnd });
+  }
+
+  function selectSegment(segment: CaptionSegment) {
+    setActiveSegmentId(segment.id);
+    setCaption(segment.text);
+    setStart(segment.start);
+    setEnd(segment.end);
+    setCurrentTime(segment.start);
+    setSeekRequest((request) => ({ time: segment.start, nonce: request.nonce + 1 }));
+  }
+
+  function handlePlaybackTimeUpdate(nextTime: number) {
+    setCurrentTime(nextTime);
+
+    const matchingSegment = segments.find((segment) => nextTime >= segment.start && nextTime < segment.end);
+    if (!matchingSegment || matchingSegment.id === activeSegmentId) {
+      return;
+    }
+
+    setActiveSegmentId(matchingSegment.id);
+    setCaption(matchingSegment.text);
+    setStart(matchingSegment.start);
+    setEnd(matchingSegment.end);
+  }
 
   function handleVideoChange(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
@@ -53,11 +118,18 @@ export function CaptionStudio() {
     probe.onloadedmetadata = () => {
       const duration = probe.duration;
       const validationError = validateDuration(duration);
-      setVideo({ name: file.name, duration, url });
+      setVideo({ name: file.name, duration, url, file });
       setMessage({
         text: validationError ?? `${file.name} is ready for captions.`,
         tone: validationError ? "error" : "success"
       });
+      setSegments([]);
+      setActiveSegmentId(null);
+      setCaption("");
+      setCurrentTime(0);
+      setStart(0);
+      setEnd(Math.min(8, Math.max(1, duration)));
+      setTranscriptionStatus("Ready to generate captions with hosted AI. Local browser AI is the fallback.");
     };
     probe.src = url;
   }
@@ -69,12 +141,70 @@ export function CaptionStudio() {
         ? `POV: ${words.slice(0, 7).join(" ")}`
         : captionSuggestions[Math.floor(Math.random() * captionSuggestions.length)];
 
-    setCaption(suggestion);
+    updateCaption(suggestion);
     setStyle(analyzeCaption(suggestion).recommendedStyle);
     setMessage({
       text: "Local caption AI suggested a tighter hook and style.",
       tone: "success"
     });
+  }
+
+  async function generateCaptionsFromVideo() {
+    if (!video) {
+      setMessage({
+        text: "Upload a video before generating captions.",
+        tone: "error"
+      });
+      setTranscriptionStatus("Caption generation needs a loaded clip.");
+      return;
+    }
+
+    const validationError = validateDuration(video.duration);
+    if (validationError) {
+      setMessage({
+        text: validationError,
+        tone: "error"
+      });
+      setTranscriptionStatus("Use a 30 second to 2 minute clip before generating captions.");
+      return;
+    }
+
+    setIsGeneratingCaptions(true);
+    setExportMessage({ text: "", tone: "neutral" });
+    setTranscriptionStatus("Starting caption generation...");
+
+    try {
+      const generatedSegments = await generateClientCaptionSegments(video.url, video.file, video.duration, setTranscriptionStatus);
+
+      if (generatedSegments.length === 0) {
+        setMessage({
+          text: "No clear speech was detected in this clip.",
+          tone: "error"
+        });
+        setTranscriptionStatus("Try a clip with clearer voice audio.");
+        return;
+      }
+
+      setSegments(generatedSegments);
+      setActiveSegmentId(generatedSegments[0].id);
+      setCaption(generatedSegments[0].text);
+      setStart(generatedSegments[0].start);
+      setEnd(generatedSegments[0].end);
+      setStyle(analyzeCaption(generatedSegments[0].text).recommendedStyle);
+      setMessage({
+        text: `Generated ${generatedSegments.length} editable caption segments.`,
+        tone: "success"
+      });
+      setTranscriptionStatus("Captions generated. Select a segment on the timeline to edit it.");
+    } catch (error) {
+      setMessage({
+        text: "Caption generation failed in this browser.",
+        tone: "error"
+      });
+      setTranscriptionStatus(error instanceof Error ? error.message : "AI caption generation failed.");
+    } finally {
+      setIsGeneratingCaptions(false);
+    }
   }
 
   function exportCaptionKit() {
@@ -85,6 +215,29 @@ export function CaptionStudio() {
       });
       return;
     }
+
+    const exportedCaptions =
+      segments.length > 0
+        ? segments.map((segment) => ({
+            text: segment.text,
+            startSeconds: segment.start,
+            endSeconds: segment.end,
+            style,
+            size: captionSize,
+            position,
+            generatedBy: "ai-transcription"
+          }))
+        : [
+            {
+              text: caption,
+              startSeconds: start,
+              endSeconds: end,
+              style,
+              size: captionSize,
+              position,
+              generatedBy: "manual"
+            }
+          ];
 
     const kit = {
       app: "Captrix",
@@ -100,15 +253,7 @@ export function CaptionStudio() {
         exportSize: selectedPlatform.size,
         guidance: selectedPlatform.guidance
       },
-      captions: [
-        {
-          text: caption,
-          startSeconds: start,
-          endSeconds: end,
-          style,
-          position
-        }
-      ],
+      captions: exportedCaptions,
       exportedAt: new Date().toISOString()
     };
 
@@ -129,9 +274,13 @@ export function CaptionStudio() {
 
   function resetStudio() {
     setVideo(null);
-    setCaption("Turn rough clips into scroll-stopping captions.");
+    setCaption("");
+    setSegments([]);
+    setActiveSegmentId(null);
+    setCurrentTime(0);
     setStyle("creator");
-    setPosition("middle");
+    setPosition("bottom");
+    setCaptionSize(30);
     setPlatform("instagram-reels");
     setStart(0);
     setEnd(8);
@@ -140,6 +289,7 @@ export function CaptionStudio() {
       tone: "neutral"
     });
     setExportMessage({ text: "", tone: "neutral" });
+    setTranscriptionStatus("Upload a clip, then generate captions with hosted AI or local fallback.");
   }
 
   return (
@@ -148,64 +298,94 @@ export function CaptionStudio() {
       <div className="relative grid h-full min-h-0 grid-rows-[56px_minmax(0,1fr)]">
         <TopBar status={status} />
 
-        <section className="grid min-h-0 gap-3 p-3" id="editor" aria-labelledby="app-title">
-          <div className="flex min-h-0 items-center justify-between gap-4 rounded-[1.75rem] border border-white/10 bg-white/[0.07] px-5 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-xl">
-            <div>
-              <p className="text-[11px] font-black uppercase text-[#e9ff12]">Platform-aware caption studio</p>
-              <h1 id="app-title" className="mt-1 text-2xl font-black leading-none tracking-normal text-white">
-                Make captions move.
-              </h1>
-            </div>
-            <p className="hidden max-w-[34rem] text-sm leading-5 text-white/55 lg:block">
-              Pick a format, preview inside a device frame, tune the caption hook, and export a reusable kit.
-            </p>
-          </div>
+        <section className="grid min-h-0 p-3" id="editor" aria-labelledby="app-title">
+          <h1 id="app-title" className="sr-only">
+            Make captions move.
+          </h1>
 
-          <div className="grid min-h-0 grid-cols-[88px_minmax(0,1fr)_390px] gap-3">
-            <aside className="grid content-start gap-3 rounded-[1.75rem] border border-white/10 bg-white/[0.07] p-3 backdrop-blur-xl" aria-label="Studio tools">
-              {["Scene", "Frame", "Caption", "Export"].map((item, index) => (
+          <div className="grid min-h-0 grid-cols-[76px_minmax(0,1fr)_370px] gap-3">
+            <aside className="grid content-start gap-2 rounded-[1.5rem] border border-white/10 bg-white/[0.07] p-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-xl" aria-label="Studio tools">
+              {[
+                { label: "Scene", icon: Film, action: () => setPlatform("youtube-video") },
+                { label: "Frame", icon: Frame, action: () => setPlatform("instagram-reels") },
+                { label: "Caption", icon: Captions, action: suggestCaption },
+                { label: "Export", icon: Download, action: exportCaptionKit }
+              ].map((tool, index) => {
+                const Icon = tool.icon;
+                return (
                 <button
-                  className={`grid size-14 place-items-center rounded-2xl border text-[10px] font-black transition ${index === 2 ? "border-[#e9ff12] bg-[#e9ff12] text-black" : "border-white/10 bg-white/[0.06] text-white/65 hover:bg-white/[0.12]"}`}
-                  key={item}
+                  className={`grid h-[3.75rem] w-full place-items-center rounded-2xl border px-1 py-2 text-[9px] font-black transition ${index === 2 ? "border-[#e9ff12] bg-[#e9ff12] text-black shadow-[0_0_24px_rgba(233,255,18,0.24)]" : "border-white/10 bg-white/[0.06] text-white/65 hover:bg-white/[0.12] hover:text-white"}`}
+                  key={tool.label}
                   type="button"
+                  title={tool.label}
+                  onClick={tool.action}
                 >
-                  {item}
+                  <Icon aria-hidden="true" size={22} strokeWidth={2.4} />
+                  <span className="truncate">{tool.label}</span>
                 </button>
-              ))}
+                );
+              })}
+              <button
+                className="grid h-[3.75rem] w-full place-items-center rounded-2xl border border-white/10 bg-white/[0.06] px-1 py-2 text-[9px] font-black text-white/65 transition hover:bg-white/[0.12] hover:text-white"
+                type="button"
+                title="Increase caption size"
+                onClick={() => setCaptionSize((size) => Math.min(52, size + 4))}
+              >
+                <Sparkles aria-hidden="true" size={22} strokeWidth={2.4} />
+                <span>Size</span>
+              </button>
             </aside>
 
             <section className="grid min-h-0 grid-rows-[minmax(0,1fr)_auto] gap-3">
               <PreviewStage
                 video={video}
-                caption={caption}
+                caption={previewCaption}
                 style={style}
                 position={position}
+                captionSize={captionSize}
                 platform={selectedPlatform}
-                setCaption={setCaption}
-                setStyle={setStyle}
+                segmentCount={segments.length}
+                seekRequest={seekRequest}
+                onTimeUpdate={handlePlaybackTimeUpdate}
               />
-              <TimelinePanel caption={caption} start={start} end={end} width={trackWidth} platform={selectedPlatform} />
+              <TimelinePanel
+                caption={caption}
+                start={start}
+                end={end}
+                width={trackWidth}
+                platform={selectedPlatform}
+                duration={video?.duration ?? 120}
+                segments={segments}
+                activeSegmentId={activeTimelineSegmentId}
+                onSelectSegment={selectSegment}
+              />
             </section>
 
             <InspectorPanel
               caption={caption}
+              segments={segments}
               style={style}
               position={position}
+              captionSize={captionSize}
               platform={platform}
               selectedPlatform={selectedPlatform}
               coach={coach}
               message={message}
               exportMessage={exportMessage}
+              transcriptionStatus={transcriptionStatus}
+              isGeneratingCaptions={isGeneratingCaptions}
               start={start}
               end={end}
               onVideoChange={handleVideoChange}
-              setCaption={setCaption}
+              setCaption={updateCaption}
               setStyle={setStyle}
               setPosition={setPosition}
+              setCaptionSize={setCaptionSize}
               setPlatform={setPlatform}
-              setStart={setStart}
-              setEnd={setEnd}
+              setStart={updateStart}
+              setEnd={updateEnd}
               suggestCaption={suggestCaption}
+              generateCaptionsFromVideo={generateCaptionsFromVideo}
               exportCaptionKit={exportCaptionKit}
               resetStudio={resetStudio}
             />

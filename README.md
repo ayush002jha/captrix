@@ -25,6 +25,7 @@ Increment 01 includes:
 - Tailwind CSS studio UI with componentized editor panels.
 - Video upload with file type and duration validation.
 - Caption preview overlay.
+- Hosted-first AI caption generation with local browser fallback.
 - Platform presets for Instagram Reels, TikTok, YouTube Shorts, Instagram Feed, YouTube long-form, Facebook video, and square posts.
 - Device-aware preview frames for mobile, desktop, and square formats.
 - Caption style and position controls.
@@ -44,6 +45,22 @@ Then visit:
 ```txt
 http://localhost:3000
 ```
+
+## Optional Hosted Caption Endpoint
+
+Captrix tries a free hosted multilingual Whisper endpoint first, then falls back to browser AI if the hosted request is blocked, rate-limited, or unavailable.
+
+Set this in Vercel only after a custom hosted ASR endpoint is available:
+
+```txt
+NEXT_PUBLIC_CAPTRIX_TRANSCRIBE_ENDPOINT=https://your-free-asr-endpoint.example/transcribe
+```
+
+Expected endpoint contract:
+
+- Request: `POST multipart/form-data` with `file` and `duration`.
+- Response: JSON with `segments`, `chunks`, or `text`.
+- Segment shape: `{ "text": "...", "start": 0, "end": 3.2 }`.
 
 ## Verification
 
@@ -69,6 +86,16 @@ Create and run the core frontend test:
 
 ```bash
 testsprite test create --plan-from testsprite/plans/editor-core.plan.json --run --wait --output json
+```
+
+Create focused frontend tests for stronger hackathon loop evidence:
+
+```bash
+testsprite test create --plan-from testsprite/plans/editor-load.plan.json --run --wait --output json
+testsprite test create --plan-from testsprite/plans/platform-formats.plan.json --run --wait --output json
+testsprite test create --plan-from testsprite/plans/caption-controls.plan.json --run --wait --output json
+testsprite test create --plan-from testsprite/plans/ai-caption-generation.plan.json --run --wait --output json
+testsprite test create --plan-from testsprite/plans/export-guards.plan.json --run --wait --output json
 ```
 
 The GitHub Actions workflow uses these repository secrets:

@@ -1,0 +1,21 @@
+{
+  "projectId": "c91f693d-84bd-4ea7-8178-35352c93e8dc",
+  "type": "frontend",
+  "name": "Captrix editor load and controls",
+  "description": "Verifies that the deployed Captrix studio loads with the main editor controls visible.",
+  "priority": "p0",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Open https://captrix-ai.vercel.app/."
+    },
+    {
+      "type": "assertion",
+      "description": "The Captrix AI editor loads, the main heading contains 'Make captions move.', and data-testid=project-status says the app is ready for a clip."
+    },
+    {
+      "type": "assertion",
+      "description": "data-testid=video-input, data-testid=generate-captions, data-testid=caption-input, data-testid=caption-size, data-testid=style-creator, data-testid=position-bottom, data-testid=export-kit, and data-testid=reset-studio are visible."
+    }
+  ]
+}

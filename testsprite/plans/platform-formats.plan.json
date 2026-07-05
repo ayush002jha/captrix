@@ -1,0 +1,33 @@
+{
+  "projectId": "c91f693d-84bd-4ea7-8178-35352c93e8dc",
+  "type": "frontend",
+  "name": "Captrix platform format switching",
+  "description": "Verifies platform-aware preview presets for short-form, long-form, and square video formats.",
+  "priority": "p0",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Open https://captrix-ai.vercel.app/."
+    },
+    {
+      "type": "assertion",
+      "description": "data-testid=platform-instagram-reels, data-testid=platform-tiktok, data-testid=platform-youtube-shorts, data-testid=platform-youtube-video, data-testid=platform-facebook-video, and data-testid=platform-square-post are visible."
+    },
+    {
+      "type": "action",
+      "description": "Click data-testid=platform-youtube-video."
+    },
+    {
+      "type": "assertion",
+      "description": "The format metric or export target updates to 1920 x 1080 and the active platform is YouTube."
+    },
+    {
+      "type": "action",
+      "description": "Click data-testid=platform-instagram-reels, then click data-testid=platform-square-post."
+    },
+    {
+      "type": "assertion",
+      "description": "The format metric updates after each click and the preview remains visible without a page reload."
+    }
+  ]
+}

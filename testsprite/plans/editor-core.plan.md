@@ -9,7 +9,7 @@ Run this plan against the deployed Vercel URL.
 1. Open the Captrix live URL.
 2. Verify the main heading contains "Make captions move."
 3. Verify `data-testid=project-status` says the app is ready for a clip.
-4. Verify `data-testid=platform-instagram-reels`, `data-testid=platform-youtube-video`, `data-testid=video-input`, `data-testid=caption-input`, `data-testid=style-creator`, `data-testid=position-middle`, and `data-testid=export-kit` are visible.
+4. Verify `data-testid=platform-instagram-reels`, `data-testid=platform-youtube-video`, `data-testid=video-input`, `data-testid=generate-captions`, `data-testid=transcription-status`, `data-testid=caption-input`, `data-testid=style-creator`, `data-testid=position-bottom`, and `data-testid=export-kit` are visible.
 
 Expected result: The editor is usable without authentication.
 
@@ -19,10 +19,11 @@ Expected result: The editor is usable without authentication.
 2. Verify `data-testid=caption-overlay` updates with the same text.
 3. Click `data-testid=style-karaoke`.
 4. Verify the active style metric changes to "Karaoke".
-5. Click `data-testid=position-bottom`.
-6. Verify the caption remains visible on the video stage.
+5. Move `data-testid=caption-size` to a larger value.
+6. Click `data-testid=position-bottom`.
+7. Verify the caption remains visible on the video stage.
 
-Expected result: Caption text, style, and position update without a page reload.
+Expected result: Caption text, style, size, and position update without a page reload.
 
 ## Flow 2B: Platform Format Switching
 
@@ -32,6 +33,13 @@ Expected result: Caption text, style, and position update without a page reload.
 4. Verify the format metric or platform guidance updates back to Reels.
 
 Expected result: Platform presets change the preview format without losing the current caption.
+
+## Flow 2C: Client-Side Caption Generation Surface
+
+1. Verify `data-testid=generate-captions` is visible.
+2. Verify `data-testid=transcription-status` explains that captions are generated locally.
+
+Expected result: The editor exposes client-side AI caption generation without requiring a server API key.
 
 ## Flow 3: Local Caption AI
 

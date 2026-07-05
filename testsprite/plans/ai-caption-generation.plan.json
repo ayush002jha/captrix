@@ -1,0 +1,29 @@
+{
+  "projectId": "c91f693d-84bd-4ea7-8178-35352c93e8dc",
+  "type": "frontend",
+  "name": "Captrix AI caption generation surface",
+  "description": "Verifies the hosted-first AI caption generation UI and local fallback messaging without forcing CI to download a model.",
+  "priority": "p0",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Open https://captrix-ai.vercel.app/."
+    },
+    {
+      "type": "assertion",
+      "description": "data-testid=generate-captions is visible and says captions use hosted AI first with local browser fallback."
+    },
+    {
+      "type": "assertion",
+      "description": "data-testid=transcription-status is visible and explains that captions can be generated with hosted AI or local fallback."
+    },
+    {
+      "type": "action",
+      "description": "Click data-testid=generate-captions without uploading a video."
+    },
+    {
+      "type": "assertion",
+      "description": "The app shows that caption generation needs a loaded clip and does not crash."
+    }
+  ]
+}

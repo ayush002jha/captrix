@@ -2,6 +2,13 @@ export type CaptionStyle = "creator" | "karaoke" | "meme" | "minimal" | "neon";
 
 export type CaptionPosition = "top" | "middle" | "bottom";
 
+export type CaptionSegment = {
+  id: string;
+  text: string;
+  start: number;
+  end: number;
+};
+
 export type PlatformKey =
   | "instagram-reels"
   | "tiktok"
@@ -25,6 +32,7 @@ export type VideoState = {
   name: string;
   duration: number;
   url: string;
+  file: File;
 };
 
 export type Tone = "neutral" | "error" | "success";

@@ -1,0 +1,29 @@
+{
+  "projectId": "c91f693d-84bd-4ea7-8178-35352c93e8dc",
+  "type": "frontend",
+  "name": "Captrix caption styling controls",
+  "description": "Verifies caption text, style, size, and position controls.",
+  "priority": "p0",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Open https://captrix-ai.vercel.app/."
+    },
+    {
+      "type": "action",
+      "description": "Replace data-testid=caption-input with 'Launch clips faster with styled captions.'."
+    },
+    {
+      "type": "assertion",
+      "description": "data-testid=caption-overlay updates with 'Launch clips faster with styled captions.'."
+    },
+    {
+      "type": "action",
+      "description": "Click data-testid=style-karaoke, move data-testid=caption-size to a larger value, then click data-testid=position-top."
+    },
+    {
+      "type": "assertion",
+      "description": "The caption remains visible, the active style metric shows Karaoke, and the active position control is Top."
+    }
+  ]
+}
