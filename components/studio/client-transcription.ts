@@ -39,6 +39,12 @@ function clampTime(value: number, duration: number) {
   return Math.max(0, Math.min(duration, Number(value.toFixed(2))));
 }
 
+function visibleCaptionEnd(start: number, fallbackEnd: number, text: string, duration: number) {
+  const wordCount = cleanText(text).split(/\s+/).filter(Boolean).length;
+  const estimatedReadingTime = Math.max(0.9, Math.min(3.4, wordCount * 0.36 + 0.55));
+  return clampTime(Math.min(fallbackEnd, start + estimatedReadingTime), duration);
+}
+
 function splitChunkIntoSegments(text: string, start: number, end: number, duration: number, prefix: string) {
   const words = cleanText(text).split(/\s+/).filter(Boolean);
 
@@ -59,7 +65,12 @@ function splitChunkIntoSegments(text: string, start: number, end: number, durati
       id: `${prefix}-${groups.length + 1}`,
       text: slice.join(" "),
       start: clampTime(safeStart + chunkDuration * ratioStart, duration),
-      end: clampTime(safeStart + chunkDuration * ratioEnd, duration)
+      end: visibleCaptionEnd(
+        clampTime(safeStart + chunkDuration * ratioStart, duration),
+        clampTime(safeStart + chunkDuration * ratioEnd, duration),
+        slice.join(" "),
+        duration
+      )
     });
   }
 
@@ -77,7 +88,7 @@ function segmentsFromTranscript(output: AsrOutput, duration: number) {
           id: segment.id ?? `hosted-${index + 1}`,
           text: cleanText(segment.text ?? ""),
           start: clampTime(start, duration),
-          end: clampTime(Math.max(end, start + 0.8), duration)
+          end: visibleCaptionEnd(clampTime(start, duration), clampTime(Math.max(end, start + 0.8), duration), segment.text ?? "", duration)
         };
       })
       .filter((segment) => segment.text.length > 0);

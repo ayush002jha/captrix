@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { ChangeEvent, DragEvent, KeyboardEvent, useEffect, useRef } from "react";
 import { styleLabels } from "./data";
 import type { CaptionPosition, CaptionStyle, PlatformPreset, VideoState } from "./types";
 import { formatDuration } from "./utils";
@@ -15,6 +15,7 @@ type PreviewStageProps = {
   isGeneratingCaptions: boolean;
   generationStatus: string;
   onTimeUpdate: (time: number) => void;
+  onVideoFile: (file: File) => void;
 };
 
 const captionPositionClass: Record<CaptionPosition, string> = {
@@ -51,9 +52,11 @@ export function PreviewStage({
   seekRequest,
   isGeneratingCaptions,
   generationStatus,
-  onTimeUpdate
+  onTimeUpdate,
+  onVideoFile
 }: PreviewStageProps) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const uploadInputRef = useRef<HTMLInputElement | null>(null);
   const videoText = video ? video.name : "No clip loaded";
   const previewCaption = caption.trim();
   const isPlaceholder = previewCaption.length === 0;
@@ -65,6 +68,39 @@ export function PreviewStage({
 
     videoRef.current.currentTime = seekRequest.time;
   }, [seekRequest]);
+
+  function handleUploadChange(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (file) {
+      onVideoFile(file);
+    }
+    event.target.value = "";
+  }
+
+  function handleStageClick() {
+    if (!video) {
+      uploadInputRef.current?.click();
+    }
+  }
+
+  function handleStageKeyDown(event: KeyboardEvent<HTMLDivElement>) {
+    if (!video && (event.key === "Enter" || event.key === " ")) {
+      event.preventDefault();
+      uploadInputRef.current?.click();
+    }
+  }
+
+  function handleDrop(event: DragEvent<HTMLDivElement>) {
+    if (video) {
+      return;
+    }
+
+    event.preventDefault();
+    const file = event.dataTransfer.files?.[0];
+    if (file) {
+      onVideoFile(file);
+    }
+  }
 
   return (
     <section className="grid min-h-0 grid-rows-[minmax(0,1fr)_auto] gap-3 overflow-hidden rounded-[1.75rem] border border-white/10 bg-black/35 p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
@@ -82,10 +118,21 @@ export function PreviewStage({
           </div>
 
           <div
-            className={`relative grid max-h-[calc(100svh-242px)] min-h-0 overflow-hidden rounded-[1.25rem] border border-white/10 bg-[radial-gradient(circle_at_72%_40%,rgba(255,56,86,0.30),transparent_32%),radial-gradient(circle_at_24%_28%,rgba(0,245,212,0.25),transparent_30%),linear-gradient(135deg,#111827,#050509)] ${platform.frame === "phone" ? "rounded-[1.8rem]" : ""}`}
+            className={`relative grid max-h-[calc(100svh-242px)] min-h-0 overflow-hidden rounded-[1.25rem] border border-white/10 bg-[radial-gradient(circle_at_72%_40%,rgba(255,56,86,0.30),transparent_32%),radial-gradient(circle_at_24%_28%,rgba(0,245,212,0.25),transparent_30%),linear-gradient(135deg,#111827,#050509)] ${!video ? "cursor-pointer hover:border-[#e9ff12]/45" : ""} ${platform.frame === "phone" ? "rounded-[1.8rem]" : ""}`}
             data-testid="video-stage"
             style={{ aspectRatio: platform.aspectRatio }}
+            role={!video ? "button" : undefined}
+            tabIndex={!video ? 0 : undefined}
+            onClick={handleStageClick}
+            onDragOver={(event) => {
+              if (!video) {
+                event.preventDefault();
+              }
+            }}
+            onDrop={handleDrop}
+            onKeyDown={handleStageKeyDown}
           >
+            <input ref={uploadInputRef} className="sr-only" type="file" accept="video/*" onChange={handleUploadChange} />
             {video ? (
               <video
                 ref={videoRef}
@@ -117,7 +164,7 @@ export function PreviewStage({
                 <div>
                   <strong className="block text-lg font-black">Drop in a {platform.shortLabel} clip</strong>
                   <span className="mt-2 block max-w-[28ch] text-sm text-white/60">
-                    {platform.size}. 30 seconds to 2 minutes, MP4/WebM/MOV.
+                    Click or drag a video here. {platform.size}. 30 seconds to 2 minutes.
                   </span>
                 </div>
               </div>

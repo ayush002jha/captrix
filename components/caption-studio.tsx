@@ -175,8 +175,7 @@ export function CaptionStudio() {
     setEnd(matchingSegment.end);
   }
 
-  function handleVideoChange(event: ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0];
+  function loadVideoFile(file: File) {
     if (!file) {
       return;
     }
@@ -186,7 +185,6 @@ export function CaptionStudio() {
         text: "Choose a video file to create a caption preview.",
         tone: "error"
       });
-      event.target.value = "";
       return;
     }
 
@@ -210,6 +208,16 @@ export function CaptionStudio() {
       setTranscriptionStatus("Clip ready. Generate captions when you are ready.");
     };
     probe.src = url;
+  }
+
+  function handleVideoChange(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) {
+      return;
+    }
+
+    loadVideoFile(file);
+    event.target.value = "";
   }
 
   function applyStudioPreset(preset: StudioPreset) {
@@ -680,6 +688,7 @@ export function CaptionStudio() {
                 isGeneratingCaptions={showCaptionActivity}
                 generationStatus={transcriptionStatus}
                 onTimeUpdate={handlePlaybackTimeUpdate}
+                onVideoFile={loadVideoFile}
               />
               <TimelinePanel
                 caption={caption}
