@@ -137,6 +137,33 @@ export function TimelinePanel({
     window.addEventListener("pointerup", handlePointerUp, { once: true });
   }
 
+  function moveSegment(segment: CaptionSegment, event: ReactPointerEvent<HTMLButtonElement>) {
+    event.preventDefault();
+    onSelectSegment(segment);
+
+    const initialClientX = event.clientX;
+    const initialStart = segment.start;
+    const segmentDuration = Math.max(0.35, segment.end - segment.start);
+    const maxStart = Math.max(0, safeDuration - segmentDuration);
+
+    function handlePointerMove(pointerEvent: PointerEvent) {
+      const deltaSeconds = ((pointerEvent.clientX - initialClientX) / trackPixelWidth) * safeDuration;
+      const nextStart = Math.max(0, Math.min(maxStart, initialStart + deltaSeconds));
+      onUpdateSegment(segment.id, {
+        start: Number(nextStart.toFixed(2)),
+        end: Number((nextStart + segmentDuration).toFixed(2))
+      });
+    }
+
+    function handlePointerUp() {
+      window.removeEventListener("pointermove", handlePointerMove);
+      window.removeEventListener("pointerup", handlePointerUp);
+    }
+
+    window.addEventListener("pointermove", handlePointerMove);
+    window.addEventListener("pointerup", handlePointerUp, { once: true });
+  }
+
   function formatTick(seconds: number) {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = Math.round(seconds % 60);
@@ -149,7 +176,7 @@ export function TimelinePanel({
         <div>
           <span className="text-[10px] font-black uppercase text-white/40">Caption timeline</span>
           <p className="mt-1 text-xs text-white/45">
-            {segments.length > 0 ? `${segments.length} generated segments. Drag edges to adjust timing.` : "Manual caption layer"}
+            {segments.length > 0 ? `${segments.length} generated segments. Drag blocks or edges to adjust timing.` : "Manual caption layer"}
           </p>
         </div>
         <strong className="text-xs font-black text-white">
@@ -220,13 +247,13 @@ export function TimelinePanel({
                 />
               ) : (
                   <button
-                    className={`absolute top-0 flex h-12 min-w-16 items-center overflow-hidden rounded-xl border px-3 text-left text-xs font-black transition ${active ? "border-[#e9ff12] bg-[#e9ff12] text-black shadow-[0_0_18px_rgba(233,255,18,0.28)]" : "border-white/10 bg-[#0b63f6] text-white hover:bg-[#2d7dff]"}`}
+                    className={`absolute top-0 flex h-12 min-w-16 cursor-grab items-center overflow-hidden rounded-xl border px-3 text-left text-xs font-black transition active:cursor-grabbing ${active ? "border-[#e9ff12] bg-[#e9ff12] text-black shadow-[0_0_18px_rgba(233,255,18,0.28)]" : "border-white/10 bg-[#0b63f6] text-white hover:bg-[#2d7dff]"}`}
                     key={segment.id}
                     type="button"
                     data-testid={`caption-segment-${segment.id}`}
                     title={segment.text}
                     style={{ left: `${left}px`, width: `${segmentWidth}px` }}
-                    onClick={() => onSelectSegment(segment)}
+                    onPointerDown={(event) => moveSegment(segment, event)}
                     onDoubleClick={() => beginEditing(segment.id, segment.text)}
                   >
                     <span
