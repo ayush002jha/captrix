@@ -376,10 +376,22 @@ export function CaptionStudio() {
     source.playsInline = true;
     source.preload = "auto";
     source.muted = false;
+    source.crossOrigin = "anonymous";
+    source.style.position = "fixed";
+    source.style.left = "-99999px";
+    source.style.top = "0";
+    source.style.width = "1px";
+    source.style.height = "1px";
+    source.style.opacity = "0";
+    source.style.pointerEvents = "none";
+    source.setAttribute("aria-hidden", "true");
+    document.body.appendChild(source);
 
     const mimeType = ["video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus", "video/webm"].find((type) =>
       MediaRecorder.isTypeSupported(type)
     );
+    let audioContext: AudioContext | null = null;
+    let recorder: MediaRecorder | null = null;
 
     try {
       if (source.readyState < 1) {
@@ -391,7 +403,6 @@ export function CaptionStudio() {
       source.currentTime = 0;
 
       const canvasStream = canvas.captureStream(30);
-      let audioContext: AudioContext | null = null;
 
       try {
         audioContext = new AudioContext();
@@ -404,15 +415,16 @@ export function CaptionStudio() {
         audioContext = null;
       }
 
-      const recorder = new MediaRecorder(canvasStream, mimeType ? { mimeType } : undefined);
+      const activeRecorder = new MediaRecorder(canvasStream, mimeType ? { mimeType } : undefined);
+      recorder = activeRecorder;
       const chunks: BlobPart[] = [];
       const stopped = new Promise<Blob>((resolve) => {
-        recorder.ondataavailable = (event) => {
+        activeRecorder.ondataavailable = (event) => {
           if (event.data.size > 0) {
             chunks.push(event.data);
           }
         };
-        recorder.onstop = () => resolve(new Blob(chunks, { type: recorder.mimeType || "video/webm" }));
+        activeRecorder.onstop = () => resolve(new Blob(chunks, { type: activeRecorder.mimeType || "video/webm" }));
       });
 
       function drawFrame() {
@@ -432,12 +444,14 @@ export function CaptionStudio() {
         }
       }
 
-      recorder.start(500);
+      activeRecorder.start(500);
       await source.play();
       drawFrame();
       await new Promise<void>((resolve) => {
         source.onended = () => {
-          recorder.stop();
+          if (activeRecorder.state === "recording") {
+            activeRecorder.stop();
+          }
           resolve();
         };
       });
@@ -461,6 +475,13 @@ export function CaptionStudio() {
       });
     } finally {
       source.pause();
+      if (recorder?.state === "recording") {
+        recorder.stop();
+      }
+      await audioContext?.close();
+      source.removeAttribute("src");
+      source.load();
+      source.remove();
       setIsExporting(false);
     }
   }
