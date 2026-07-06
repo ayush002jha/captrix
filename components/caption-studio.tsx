@@ -4,7 +4,7 @@ import { ChangeEvent, useMemo, useState } from "react";
 import { Captions, Film, Frame, Sparkles } from "lucide-react";
 import { generateClientCaptionSegments } from "./studio/client-transcription";
 import { captionSuggestions, platformPresets } from "./studio/data";
-import { ExportModal, type ExportQuality } from "./studio/export-modal";
+import { ExportModal, type ExportFileType, type ExportQuality } from "./studio/export-modal";
 import { InspectorPanel } from "./studio/inspector-panel";
 import { PreviewStage } from "./studio/preview-stage";
 import { TimelinePanel } from "./studio/timeline-panel";
@@ -38,6 +38,8 @@ export function CaptionStudio() {
   const [isExporting, setIsExporting] = useState(false);
   const [exportModalOpen, setExportModalOpen] = useState(false);
   const [exportQuality, setExportQuality] = useState<ExportQuality>("full");
+  const [exportFileName, setExportFileName] = useState("captrix-captioned-video");
+  const [exportFileType, setExportFileType] = useState<ExportFileType>("webm");
   const [includeAudio, setIncludeAudio] = useState(true);
   const [exportProgress, setExportProgress] = useState({
     percent: 0,
@@ -247,6 +249,25 @@ export function CaptionStudio() {
     setExportModalOpen(true);
   }
 
+  function getExportMimeTypes(fileType: ExportFileType) {
+    if (fileType === "mp4") {
+      return ["video/mp4;codecs=avc1.42E01E,mp4a.40.2", "video/mp4;codecs=h264,aac", "video/mp4"];
+    }
+
+    return ["video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus", "video/webm"];
+  }
+
+  function sanitizeExportFileName(fileName: string) {
+    const cleanName = fileName
+      .trim()
+      .replace(/\.[a-z0-9]+$/i, "")
+      .replace(/[^a-z0-9-_ ]/gi, "")
+      .replace(/\s+/g, "-")
+      .toLowerCase();
+
+    return cleanName || "captrix-captioned-video";
+  }
+
   function getCaptionAtTime(time: number) {
     if (segments.length > 0) {
       return segments.find((segment) => time >= segment.start && time < segment.end)?.text ?? "";
@@ -396,7 +417,7 @@ export function CaptionStudio() {
     const renderContext = context;
 
     const source = document.createElement("video");
-    source.src = video.url;
+    source.src = exportVideo.url;
     source.playsInline = true;
     source.preload = "auto";
     source.muted = false;
@@ -411,9 +432,18 @@ export function CaptionStudio() {
     source.setAttribute("aria-hidden", "true");
     document.body.appendChild(source);
 
-    const mimeType = ["video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus", "video/webm"].find((type) =>
+    const mimeType = getExportMimeTypes(exportFileType).find((type) =>
       MediaRecorder.isTypeSupported(type)
     );
+    if (!mimeType) {
+      setIsExporting(false);
+      setExportMessage({
+        text: `${exportFileType.toUpperCase()} export is not supported in this browser.`,
+        tone: "error"
+      });
+      source.remove();
+      return;
+    }
     let audioContext: AudioContext | null = null;
     let recorder: MediaRecorder | null = null;
     const startedAt = performance.now();
@@ -494,7 +524,7 @@ export function CaptionStudio() {
       const url = URL.createObjectURL(blob);
       const anchor = document.createElement("a");
       anchor.href = url;
-      anchor.download = `captrix-${selectedPlatform.shortLabel.toLowerCase()}-captioned.webm`;
+      anchor.download = `${sanitizeExportFileName(exportFileName)}.${exportFileType}`;
       anchor.click();
       URL.revokeObjectURL(url);
       setExportMessage({
@@ -643,11 +673,15 @@ export function CaptionStudio() {
           formatLabel={selectedPlatform.label}
           exportSize={selectedPlatform.size}
           quality={exportQuality}
+          fileName={exportFileName}
+          fileType={exportFileType}
           includeAudio={includeAudio}
           isExporting={isExporting}
           progress={exportProgress}
           status={exportMessage}
           onQualityChange={setExportQuality}
+          onFileNameChange={setExportFileName}
+          onFileTypeChange={setExportFileType}
           onIncludeAudioChange={setIncludeAudio}
           onClose={() => setExportModalOpen(false)}
           onStartExport={exportCaptionedVideo}

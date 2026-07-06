@@ -2,6 +2,7 @@ import { Download, Volume2, VolumeX, X } from "lucide-react";
 import type { Tone } from "./types";
 
 export type ExportQuality = "full" | "half";
+export type ExportFileType = "webm" | "mp4";
 
 type ExportProgress = {
   percent: number;
@@ -13,11 +14,15 @@ type ExportModalProps = {
   formatLabel: string;
   exportSize: string;
   quality: ExportQuality;
+  fileName: string;
+  fileType: ExportFileType;
   includeAudio: boolean;
   isExporting: boolean;
   progress: ExportProgress;
   status: { text: string; tone: Tone };
   onQualityChange: (quality: ExportQuality) => void;
+  onFileNameChange: (fileName: string) => void;
+  onFileTypeChange: (fileType: ExportFileType) => void;
   onIncludeAudioChange: (includeAudio: boolean) => void;
   onClose: () => void;
   onStartExport: () => void;
@@ -48,11 +53,15 @@ export function ExportModal({
   formatLabel,
   exportSize,
   quality,
+  fileName,
+  fileType,
   includeAudio,
   isExporting,
   progress,
   status,
   onQualityChange,
+  onFileNameChange,
+  onFileTypeChange,
   onIncludeAudioChange,
   onClose,
   onStartExport
@@ -68,7 +77,7 @@ export function ExportModal({
           <div>
             <h2 className="text-lg font-black text-white">Export video</h2>
             <p className="mt-1 text-xs text-white/50">
-              {formatLabel}. WebM with burned-in captions.
+              {formatLabel}. Video with burned-in captions.
             </p>
           </div>
           <button
@@ -83,6 +92,37 @@ export function ExportModal({
         </div>
 
         <div className="grid gap-4 p-4">
+          <label className="block">
+            <span className="mb-2 block text-xs font-black uppercase text-white/45">File name</span>
+            <input
+              className="h-11 w-full rounded-2xl border border-white/10 bg-black/25 px-3 text-sm font-bold text-white outline-none transition placeholder:text-white/35 focus:border-[#e9ff12] disabled:opacity-60"
+              type="text"
+              value={fileName}
+              maxLength={80}
+              disabled={isExporting}
+              placeholder="captrix-captioned-video"
+              onChange={(event) => onFileNameChange(event.target.value)}
+            />
+          </label>
+
+          <div className="grid grid-cols-2 gap-2">
+            {[
+              { value: "webm" as ExportFileType, label: "WebM", detail: "Best browser support" },
+              { value: "mp4" as ExportFileType, label: "MP4", detail: "If browser supports it" }
+            ].map((option) => (
+              <button
+                className={`min-h-16 rounded-2xl border p-3 text-left transition ${fileType === option.value ? "border-[#e9ff12] bg-[#e9ff12] text-black" : "border-white/10 bg-white/[0.06] text-white hover:bg-white/[0.1]"}`}
+                type="button"
+                key={option.value}
+                disabled={isExporting}
+                onClick={() => onFileTypeChange(option.value)}
+              >
+                <strong className="block text-sm font-black">{option.label}</strong>
+                <span className={`mt-1 block text-xs font-bold ${fileType === option.value ? "text-black/65" : "text-white/45"}`}>{option.detail}</span>
+              </button>
+            ))}
+          </div>
+
           <div className="grid grid-cols-2 gap-2">
             {[
               { value: "full" as ExportQuality, label: "Full quality", detail: exportSize },
