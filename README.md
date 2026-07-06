@@ -1,6 +1,6 @@
 # Captrix
 
-Captrix is a browser-based caption studio for short creator videos. Users upload a 30 second to 2 minute clip, add editable captions, preview animated caption styles, get a local AI caption score, and export a caption kit.
+Captrix is a browser-based caption studio for short creator videos. Users upload a 30 second to 2 minute clip, generate editable captions from speech, tune platform-ready styles, and export a captioned video.
 
 Live URL: https://captrix-ai.vercel.app/
 
@@ -25,12 +25,12 @@ Increment 01 includes:
 - Tailwind CSS studio UI with componentized editor panels.
 - Video upload with file type and duration validation.
 - Caption preview overlay.
-- Hosted-first AI caption generation with local browser fallback.
+- AI caption generation with editable timeline segments.
 - Platform presets for Instagram Reels, TikTok, YouTube Shorts, Instagram Feed, YouTube long-form, Facebook video, and square posts.
 - Device-aware preview frames for mobile, desktop, and square formats.
 - Caption style and position controls.
-- Local browser-only caption coach.
-- Export guard and caption kit JSON export with platform metadata.
+- Timeline-based caption editing with double-click segment updates.
+- Client-side video export with rendered caption overlays, progress feedback, filename control, and WebM/MP4 options.
 - Stable `data-testid` hooks for TestSprite.
 
 ## Local Development
@@ -46,9 +46,9 @@ Then visit:
 http://localhost:3000
 ```
 
-## Optional Hosted Caption Endpoint
+## Optional Speech Caption Endpoint
 
-Captrix tries a free hosted multilingual Whisper endpoint first, then falls back to browser AI if the hosted request is blocked, rate-limited, or unavailable.
+Captrix can connect to a custom speech caption endpoint for faster caption generation. If that endpoint is unavailable, the app still attempts an in-browser captioning path.
 
 Set this in Vercel only after a custom hosted ASR endpoint is available:
 

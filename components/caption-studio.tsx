@@ -26,14 +26,14 @@ export function CaptionStudio() {
   const [start, setStart] = useState(0);
   const [end, setEnd] = useState(8);
   const [message, setMessage] = useState({
-    text: "No video selected yet.",
+    text: "Choose a clip to start editing.",
     tone: "neutral" as Tone
   });
   const [exportMessage, setExportMessage] = useState({
     text: "",
     tone: "neutral" as Tone
   });
-  const [transcriptionStatus, setTranscriptionStatus] = useState("Upload a clip, then generate captions with hosted AI or local fallback.");
+  const [transcriptionStatus, setTranscriptionStatus] = useState("Upload a clip to create editable captions.");
   const [isGeneratingCaptions, setIsGeneratingCaptions] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [exportModalOpen, setExportModalOpen] = useState(false);
@@ -125,7 +125,7 @@ export function CaptionStudio() {
 
     if (!file.type.startsWith("video/")) {
       setMessage({
-        text: "Choose a video file so Captrix can create a caption preview.",
+        text: "Choose a video file to create a caption preview.",
         tone: "error"
       });
       event.target.value = "";
@@ -149,7 +149,7 @@ export function CaptionStudio() {
       setCurrentTime(0);
       setStart(0);
       setEnd(Math.min(8, Math.max(1, duration)));
-      setTranscriptionStatus("Ready to generate captions with hosted AI. Local browser AI is the fallback.");
+      setTranscriptionStatus("Clip ready. Generate captions when you are ready.");
     };
     probe.src = url;
   }
@@ -164,7 +164,7 @@ export function CaptionStudio() {
     updateCaption(suggestion);
     setStyle(analyzeCaption(suggestion).recommendedStyle);
     setMessage({
-      text: "Local caption AI suggested a tighter hook and style.",
+      text: "Suggested a tighter caption hook and matching style.",
       tone: "success"
     });
   }
@@ -191,7 +191,7 @@ export function CaptionStudio() {
 
     setIsGeneratingCaptions(true);
     setExportMessage({ text: "", tone: "neutral" });
-    setTranscriptionStatus("Starting caption generation...");
+    setTranscriptionStatus("Preparing your captions...");
 
     try {
       const generatedSegments = await generateClientCaptionSegments(video.url, video.file, video.duration, setTranscriptionStatus);
@@ -218,10 +218,10 @@ export function CaptionStudio() {
       setTranscriptionStatus("Captions generated. Select a segment on the timeline to edit it.");
     } catch (error) {
       setMessage({
-        text: "Caption generation failed in this browser.",
+        text: "Caption generation could not finish.",
         tone: "error"
       });
-      setTranscriptionStatus(error instanceof Error ? error.message : "AI caption generation failed.");
+      setTranscriptionStatus(error instanceof Error ? error.message : "Try again with a clip that has clearer speech.");
     } finally {
       setIsGeneratingCaptions(false);
     }
@@ -396,7 +396,7 @@ export function CaptionStudio() {
     setIsExporting(true);
     setExportProgress({ percent: 0, etaSeconds: null });
     setExportMessage({
-      text: "Rendering captioned video locally...",
+      text: "Rendering your captioned video...",
       tone: "neutral"
     });
 
@@ -409,7 +409,7 @@ export function CaptionStudio() {
     if (!context) {
       setIsExporting(false);
       setExportMessage({
-        text: "Canvas export is not available in this browser.",
+        text: "Video export is not available in this browser.",
         tone: "error"
       });
       return;
@@ -573,7 +573,7 @@ export function CaptionStudio() {
     setExportMessage({ text: "", tone: "neutral" });
     setExportProgress({ percent: 0, etaSeconds: null });
     setExportModalOpen(false);
-    setTranscriptionStatus("Upload a clip, then generate captions with hosted AI or local fallback.");
+    setTranscriptionStatus("Upload a clip to create editable captions.");
   }
 
   return (

@@ -112,7 +112,7 @@ async function getTranscriber(onStatus: (message: string) => void) {
         dtype: "fp32",
         progress_callback: (progress: ProgressStatus) => {
           if (progress.status === "progress" && typeof progress.progress === "number") {
-            onStatus(`Loading local AI model ${Math.round(progress.progress)}%`);
+            onStatus(`Preparing caption engine ${Math.round(progress.progress)}%`);
             return;
           }
 
@@ -122,7 +122,7 @@ async function getTranscriber(onStatus: (message: string) => void) {
           }
 
           if (progress.status === "ready") {
-            onStatus("Local AI model ready.");
+            onStatus("Caption engine ready.");
           }
         }
       }) as Promise<Transcriber>;
@@ -142,7 +142,7 @@ async function generateHostedCaptionSegments(
   let response: Response;
 
   if (mode === "huggingface") {
-    onStatus("Trying free hosted multilingual Whisper model...");
+    onStatus("Preparing speech recognition...");
     response = await fetch(endpoint, {
       method: "POST",
       headers: {
@@ -156,7 +156,7 @@ async function generateHostedCaptionSegments(
     form.set("file", file);
     form.set("duration", String(duration));
 
-    onStatus("Uploading clip to hosted caption service...");
+    onStatus("Analyzing speech...");
     response = await fetch(endpoint, {
       method: "POST",
       body: form
@@ -165,14 +165,14 @@ async function generateHostedCaptionSegments(
 
 
   if (!response.ok) {
-    throw new Error(`Hosted caption service returned ${response.status}.`);
+    throw new Error("Caption generation service is temporarily unavailable.");
   }
 
   const output = (await response.json()) as AsrOutput;
   const segments = segmentsFromTranscript(output, duration).slice(0, 24);
 
   if (segments.length === 0) {
-    throw new Error("Hosted caption service returned no usable captions.");
+    throw new Error("No usable captions were found in this clip.");
   }
 
   return segments;
@@ -192,20 +192,20 @@ export async function generateClientCaptionSegments(
   for (const attempt of hostedAttempts) {
     try {
       const hostedSegments = await generateHostedCaptionSegments(attempt.endpoint, file, duration, onStatus, attempt.mode);
-      onStatus("Captions generated with hosted multilingual AI. Local fallback was not needed.");
+      onStatus("Captions are ready to edit.");
       return hostedSegments;
     } catch (error) {
       onStatus(
         error instanceof Error
-          ? `${error.message} Falling back to local browser AI.`
-          : "Hosted caption service failed. Falling back to local browser AI."
+          ? `${error.message} Trying another captioning method.`
+          : "Trying another captioning method."
       );
     }
   }
 
-  onStatus("Preparing browser speech model...");
+  onStatus("Preparing speech recognition...");
   const transcriber = await getTranscriber(onStatus);
-  onStatus("Transcribing audio locally...");
+  onStatus("Analyzing speech...");
 
   const output = await transcriber(audioUrl, {
     return_timestamps: true,

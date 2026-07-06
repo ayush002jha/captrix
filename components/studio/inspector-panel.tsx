@@ -231,7 +231,7 @@ export function InspectorPanel({
           <span className="grid size-10 place-items-center rounded-2xl bg-[#0b63f6] text-2xl font-black text-white">+</span>
           <span>
             <strong className="block text-sm font-black text-white">Choose video</strong>
-            <small className="mt-1 block text-xs text-white/45">Validated locally before editing</small>
+            <small className="mt-1 block text-xs text-white/45">Drop in a short clip to start</small>
           </span>
         </label>
         <p className={`mt-2 truncate text-xs ${messageClass[message.tone]}`} role="status">
@@ -255,7 +255,7 @@ export function InspectorPanel({
             <strong className="block truncate text-sm font-black">
               {isGeneratingCaptions ? "Generating captions" : "Generate captions"}
             </strong>
-            <small className="mt-1 block truncate text-xs text-white/55">Hosted first, local browser fallback</small>
+            <small className="mt-1 block truncate text-xs text-white/55">Create editable captions from speech</small>
           </span>
           <span className="rounded-full border border-white/10 bg-white/[0.08] px-2.5 py-1 text-[10px] font-black text-white/70">
             {segments.length || "AI"}

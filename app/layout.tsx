@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Captrix - Caption Studio",
-  description: "Upload a short clip, style captions, and export a caption kit."
+  title: "Captrix AI - Caption Studio",
+  description: "Turn short videos into share-ready clips with animated AI captions."
 };
 
 export default function RootLayout({

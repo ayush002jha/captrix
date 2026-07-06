@@ -39,7 +39,7 @@
     },
     {
       "type": "assertion",
-      "description": "data-testid=generate-captions is visible and data-testid=transcription-status explains that captions are generated locally without requiring a server API key."
+      "description": "data-testid=generate-captions is visible and data-testid=transcription-status invites the user to generate editable captions."
     },
     {
       "type": "action",

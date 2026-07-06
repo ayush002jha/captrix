@@ -80,7 +80,7 @@ export function ExportModal({
           <div>
             <h2 className="text-lg font-black text-white">Export video</h2>
             <p className="mt-1 text-xs text-white/50">
-              {formatLabel}. Video with burned-in captions.
+              {formatLabel}. Captions are rendered directly onto the video.
             </p>
           </div>
           <button
@@ -110,8 +110,8 @@ export function ExportModal({
 
           <div className="grid grid-cols-2 gap-2">
             {[
-              { value: "webm" as ExportFileType, label: "WebM", detail: "Best browser support" },
-              { value: "mp4" as ExportFileType, label: "MP4", detail: "If browser supports it" }
+              { value: "webm" as ExportFileType, label: "WebM", detail: "Recommended" },
+              { value: "mp4" as ExportFileType, label: "MP4", detail: "Availability varies" }
             ].map((option) => (
               <button
                 className={`min-h-16 rounded-2xl border p-3 text-left transition ${fileType === option.value ? "border-[#e9ff12] bg-[#e9ff12] text-black" : "border-white/10 bg-white/[0.06] text-white hover:bg-white/[0.1]"}`}
@@ -152,7 +152,7 @@ export function ExportModal({
           >
             <span>
               <strong className="block text-sm font-black">Audio track</strong>
-              <span className="mt-1 block text-xs text-white/45">{includeAudio ? "Keep original clip audio" : "Export captions-only video"}</span>
+              <span className="mt-1 block text-xs text-white/45">{includeAudio ? "Keep the original sound" : "Export without sound"}</span>
             </span>
             <span className="grid size-10 place-items-center rounded-2xl bg-white/[0.08] text-white">
               {includeAudio ? <Volume2 aria-hidden="true" size={19} /> : <VolumeX aria-hidden="true" size={19} />}

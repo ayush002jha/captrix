@@ -38,9 +38,9 @@ Expected result: Platform presets change the preview format without losing the c
 ## Flow 2C: Client-Side Caption Generation Surface
 
 1. Verify `data-testid=generate-captions` is visible.
-2. Verify `data-testid=transcription-status` explains that captions are generated locally.
+2. Verify `data-testid=transcription-status` invites the user to generate editable captions.
 
-Expected result: The editor exposes client-side AI caption generation without requiring a server API key.
+Expected result: The editor exposes AI caption generation without exposing implementation details to the user.
 
 ## Flow 3: Timeline Editing
 
@@ -56,7 +56,7 @@ Expected result: Caption editing lives in the timeline instead of the right insp
 2. Click `data-testid=export-kit` without uploading a video.
 3. Verify the export status says a valid clip is required before exporting.
 
-Expected result: The app prevents exporting a caption kit without a loaded clip.
+Expected result: The app prevents exporting a video without a loaded clip.
 
 ## Flow 5: Upload Validation
 
@@ -67,4 +67,4 @@ Expected result: The app prevents exporting a caption kit without a loaded clip.
 5. Upload a valid 30 second to 2 minute video if available.
 6. Verify the video preview is visible and the status changes to "Clip loaded".
 
-Expected result: File type and duration constraints are enforced locally.
+Expected result: File type and duration constraints are enforced before editing.

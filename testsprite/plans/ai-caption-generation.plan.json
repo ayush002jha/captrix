@@ -2,7 +2,7 @@
   "projectId": "c91f693d-84bd-4ea7-8178-35352c93e8dc",
   "type": "frontend",
   "name": "Captrix AI caption generation surface",
-  "description": "Verifies the hosted-first AI caption generation UI and local fallback messaging without forcing CI to download a model.",
+  "description": "Verifies the AI caption generation surface without forcing CI to download a model.",
   "priority": "p0",
   "planSteps": [
     {
@@ -11,11 +11,11 @@
     },
     {
       "type": "assertion",
-      "description": "data-testid=generate-captions is visible and says captions use hosted AI first with local browser fallback."
+      "description": "data-testid=generate-captions is visible and says captions can be created from speech."
     },
     {
       "type": "assertion",
-      "description": "data-testid=transcription-status is visible and explains that captions can be generated with hosted AI or local fallback."
+      "description": "data-testid=transcription-status is visible and invites the user to generate editable captions."
     },
     {
       "type": "action",

@@ -2,7 +2,7 @@
   "projectId": "c91f693d-84bd-4ea7-8178-35352c93e8dc",
   "type": "frontend",
   "name": "Captrix export guard",
-  "description": "Verifies that Captrix prevents exporting a caption kit before a valid clip is loaded.",
+  "description": "Verifies that Captrix prevents video export before a valid clip is loaded.",
   "priority": "p0",
   "planSteps": [
     {
