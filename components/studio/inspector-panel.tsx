@@ -11,7 +11,6 @@ type InspectorPanelProps = {
   platform: PlatformKey;
   selectedPlatform: PlatformPreset;
   message: { text: string; tone: Tone };
-  exportMessage: { text: string; tone: Tone };
   transcriptionStatus: string;
   isGeneratingCaptions: boolean;
   onVideoChange: (event: ChangeEvent<HTMLInputElement>) => void;
@@ -20,8 +19,6 @@ type InspectorPanelProps = {
   setCaptionSize: (size: number) => void;
   setPlatform: (platform: PlatformKey) => void;
   generateCaptionsFromVideo: () => void;
-  exportCaptionKit: () => void;
-  resetStudio: () => void;
 };
 
 const messageClass: Record<Tone, string> = {
@@ -163,7 +160,6 @@ export function InspectorPanel({
   platform,
   selectedPlatform,
   message,
-  exportMessage,
   transcriptionStatus,
   isGeneratingCaptions,
   onVideoChange,
@@ -171,9 +167,7 @@ export function InspectorPanel({
   setPosition,
   setCaptionSize,
   setPlatform,
-  generateCaptionsFromVideo,
-  exportCaptionKit,
-  resetStudio
+  generateCaptionsFromVideo
 }: InspectorPanelProps) {
   return (
     <aside className="min-h-0 overflow-y-auto overflow-x-hidden rounded-[1.75rem] border border-white/10 bg-white/[0.07] shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-xl [scrollbar-color:rgba(233,255,18,0.45)_rgba(255,255,255,0.06)] [scrollbar-width:thin] [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-[#e9ff12]/45 [&::-webkit-scrollbar-track]:bg-white/[0.06]" aria-label="Caption controls">
@@ -318,18 +312,6 @@ export function InspectorPanel({
             </button>
           ))}
         </div>
-      </section>
-
-      <section className="grid grid-cols-2 gap-2 p-3" id="export">
-        <button className="min-h-10 rounded-2xl bg-[#ff3856] px-4 text-sm font-black text-white shadow-[0_0_28px_rgba(255,56,86,0.3)]" type="button" data-testid="export-kit" onClick={exportCaptionKit}>
-          Export kit
-        </button>
-        <button className="min-h-10 rounded-2xl border border-white/10 bg-white/[0.06] px-4 text-sm font-black text-white" type="button" data-testid="reset-studio" onClick={resetStudio}>
-          Reset
-        </button>
-        <p className={`col-span-2 min-h-5 text-xs ${messageClass[exportMessage.tone]}`} role="status">
-          {exportMessage.text}
-        </p>
       </section>
     </aside>
   );

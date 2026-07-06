@@ -1,7 +1,7 @@
 "use client";
 
 import { ChangeEvent, useMemo, useState } from "react";
-import { Captions, Download, Film, Frame, Sparkles } from "lucide-react";
+import { Captions, Film, Frame, Sparkles } from "lucide-react";
 import { generateClientCaptionSegments } from "./studio/client-transcription";
 import { captionSuggestions, platformPresets } from "./studio/data";
 import { InspectorPanel } from "./studio/inspector-panel";
@@ -34,6 +34,7 @@ export function CaptionStudio() {
   });
   const [transcriptionStatus, setTranscriptionStatus] = useState("Upload a clip, then generate captions with hosted AI or local fallback.");
   const [isGeneratingCaptions, setIsGeneratingCaptions] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
   const selectedPlatform = platformPresets[platform];
   const status = video ? "Clip loaded" : "Ready for a clip";
   const trackWidth = timelinePercent(start, end);
@@ -216,69 +217,252 @@ export function CaptionStudio() {
     }
   }
 
-  function exportCaptionKit() {
+  function parseExportSize(size: string) {
+    const [width, height] = size.split("x").map((part) => Number(part.trim()));
+    return {
+      width: Number.isFinite(width) ? width : 1080,
+      height: Number.isFinite(height) ? height : 1920
+    };
+  }
+
+  function getCaptionAtTime(time: number) {
+    if (segments.length > 0) {
+      return segments.find((segment) => time >= segment.start && time < segment.end)?.text ?? "";
+    }
+
+    return time >= start && time <= end ? caption : "";
+  }
+
+  function wrapCanvasText(context: CanvasRenderingContext2D, text: string, maxWidth: number) {
+    const words = text.trim().toUpperCase().split(/\s+/).filter(Boolean);
+    const lines: string[] = [];
+    let line = "";
+
+    words.forEach((word) => {
+      const nextLine = line ? `${line} ${word}` : word;
+      if (context.measureText(nextLine).width > maxWidth && line) {
+        lines.push(line);
+        line = word;
+      } else {
+        line = nextLine;
+      }
+    });
+
+    if (line) {
+      lines.push(line);
+    }
+
+    return lines.slice(0, 4);
+  }
+
+  function drawRoundedRect(context: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, radius: number) {
+    context.beginPath();
+    context.moveTo(x + radius, y);
+    context.lineTo(x + width - radius, y);
+    context.quadraticCurveTo(x + width, y, x + width, y + radius);
+    context.lineTo(x + width, y + height - radius);
+    context.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+    context.lineTo(x + radius, y + height);
+    context.quadraticCurveTo(x, y + height, x, y + height - radius);
+    context.lineTo(x, y + radius);
+    context.quadraticCurveTo(x, y, x + radius, y);
+    context.closePath();
+  }
+
+  function drawCaption(context: CanvasRenderingContext2D, text: string, width: number, height: number) {
+    const cleanText = text.trim();
+    if (!cleanText) {
+      return;
+    }
+
+    const fontSize = Math.max(36, Math.round(captionSize * Math.min(width / 390, height / 720)));
+    const lineHeight = Math.round(fontSize * 1.05);
+    const maxTextWidth = width * 0.82;
+    context.textAlign = "center";
+    context.textBaseline = "middle";
+    context.font = `900 ${fontSize}px Arial, Helvetica, sans-serif`;
+    const lines = wrapCanvasText(context, cleanText, maxTextWidth);
+    const blockHeight = lines.length * lineHeight;
+    const centerX = width / 2;
+    const centerY =
+      position === "top" ? height * 0.16 : position === "middle" ? height / 2 : height - height * 0.16 - blockHeight / 2;
+    const firstY = centerY - blockHeight / 2 + lineHeight / 2;
+
+    lines.forEach((line, index) => {
+      const y = firstY + index * lineHeight;
+
+      if (style === "creator") {
+        const metrics = context.measureText(line);
+        const boxWidth = Math.min(maxTextWidth + fontSize * 0.5, metrics.width + fontSize * 0.62);
+        context.fillStyle = "#e9ff12";
+        context.shadowColor = "rgba(0,0,0,0.88)";
+        context.shadowBlur = 0;
+        context.shadowOffsetX = fontSize * 0.12;
+        context.shadowOffsetY = fontSize * 0.12;
+        context.fillRect(centerX - boxWidth / 2, y - lineHeight / 2, boxWidth, lineHeight * 0.9);
+        context.shadowOffsetX = 0;
+        context.shadowOffsetY = 0;
+        context.fillStyle = "#050509";
+        context.fillText(line, centerX, y);
+        return;
+      }
+
+      if (style === "minimal") {
+        const metrics = context.measureText(line);
+        const boxWidth = Math.min(maxTextWidth + fontSize, metrics.width + fontSize);
+        drawRoundedRect(context, centerX - boxWidth / 2, y - lineHeight / 2, boxWidth, lineHeight, fontSize * 0.22);
+        context.fillStyle = "rgba(0,0,0,0.72)";
+        context.fill();
+      }
+
+      context.lineWidth = style === "meme" ? fontSize * 0.13 : fontSize * 0.08;
+      context.strokeStyle = style === "neon" ? "#00f5d4" : "#050509";
+      context.shadowColor = style === "neon" ? "#e9ff12" : "rgba(0,0,0,0.85)";
+      context.shadowBlur = style === "neon" ? fontSize * 0.35 : fontSize * 0.18;
+      context.fillStyle = "#ffffff";
+      context.strokeText(line, centerX, y);
+      context.fillText(line, centerX, y);
+      context.shadowBlur = 0;
+
+      if (style === "karaoke") {
+        const underlineWidth = Math.min(maxTextWidth, context.measureText(line).width);
+        context.fillStyle = "#e9ff12";
+        context.fillRect(centerX - underlineWidth / 2, y + lineHeight * 0.38, underlineWidth, Math.max(6, fontSize * 0.08));
+      }
+    });
+  }
+
+  async function exportCaptionedVideo() {
     if (!video) {
       setExportMessage({
-        text: "Upload a valid clip before exporting.",
+        text: "Upload a valid clip before exporting video.",
         tone: "error"
       });
       return;
     }
 
-    const exportedCaptions =
-      segments.length > 0
-        ? segments.map((segment) => ({
-            text: segment.text,
-            startSeconds: segment.start,
-            endSeconds: segment.end,
-            style,
-            size: captionSize,
-            position,
-            generatedBy: "ai-transcription"
-          }))
-        : [
-            {
-              text: caption,
-              startSeconds: start,
-              endSeconds: end,
-              style,
-              size: captionSize,
-              position,
-              generatedBy: "manual"
-            }
-          ];
+    if (typeof MediaRecorder === "undefined") {
+      setExportMessage({
+        text: "This browser cannot render video exports. Try Chrome or Edge.",
+        tone: "error"
+      });
+      return;
+    }
 
-    const kit = {
-      app: "Captrix",
-      version: "0.1.0",
-      video: {
-        name: video.name,
-        durationSeconds: Number(video.duration.toFixed(2))
-      },
-      platform: {
-        id: platform,
-        name: selectedPlatform.label,
-        aspectRatio: selectedPlatform.aspectRatio,
-        exportSize: selectedPlatform.size,
-        guidance: selectedPlatform.guidance
-      },
-      captions: exportedCaptions,
-      exportedAt: new Date().toISOString()
-    };
-
-    const blob = new Blob([JSON.stringify(kit, null, 2)], {
-      type: "application/json"
-    });
-    const url = URL.createObjectURL(blob);
-    const anchor = document.createElement("a");
-    anchor.href = url;
-    anchor.download = "captrix-caption-kit.json";
-    anchor.click();
-    URL.revokeObjectURL(url);
+    setIsExporting(true);
     setExportMessage({
-      text: "Caption kit exported.",
-      tone: "success"
+      text: "Rendering captioned video locally...",
+      tone: "neutral"
     });
+
+    const { width, height } = parseExportSize(selectedPlatform.size);
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    const context = canvas.getContext("2d");
+
+    if (!context) {
+      setIsExporting(false);
+      setExportMessage({
+        text: "Canvas export is not available in this browser.",
+        tone: "error"
+      });
+      return;
+    }
+    const renderContext = context;
+
+    const source = document.createElement("video");
+    source.src = video.url;
+    source.playsInline = true;
+    source.preload = "auto";
+    source.muted = false;
+
+    const mimeType = ["video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus", "video/webm"].find((type) =>
+      MediaRecorder.isTypeSupported(type)
+    );
+
+    try {
+      if (source.readyState < 1) {
+        await new Promise<void>((resolve, reject) => {
+          source.onloadedmetadata = () => resolve();
+          source.onerror = () => reject(new Error("Could not load the source video for export."));
+        });
+      }
+      source.currentTime = 0;
+
+      const canvasStream = canvas.captureStream(30);
+      let audioContext: AudioContext | null = null;
+
+      try {
+        audioContext = new AudioContext();
+        const audioSource = audioContext.createMediaElementSource(source);
+        const audioDestination = audioContext.createMediaStreamDestination();
+        audioSource.connect(audioDestination);
+        audioDestination.stream.getAudioTracks().forEach((track) => canvasStream.addTrack(track));
+        await audioContext.resume();
+      } catch {
+        audioContext = null;
+      }
+
+      const recorder = new MediaRecorder(canvasStream, mimeType ? { mimeType } : undefined);
+      const chunks: BlobPart[] = [];
+      const stopped = new Promise<Blob>((resolve) => {
+        recorder.ondataavailable = (event) => {
+          if (event.data.size > 0) {
+            chunks.push(event.data);
+          }
+        };
+        recorder.onstop = () => resolve(new Blob(chunks, { type: recorder.mimeType || "video/webm" }));
+      });
+
+      function drawFrame() {
+        renderContext.fillStyle = "#050509";
+        renderContext.fillRect(0, 0, width, height);
+
+        const scale = Math.min(width / source.videoWidth, height / source.videoHeight);
+        const drawWidth = source.videoWidth * scale;
+        const drawHeight = source.videoHeight * scale;
+        const drawX = (width - drawWidth) / 2;
+        const drawY = (height - drawHeight) / 2;
+        renderContext.drawImage(source, drawX, drawY, drawWidth, drawHeight);
+        drawCaption(renderContext, getCaptionAtTime(source.currentTime), width, height);
+
+        if (!source.ended && !source.paused) {
+          requestAnimationFrame(drawFrame);
+        }
+      }
+
+      recorder.start(500);
+      await source.play();
+      drawFrame();
+      await new Promise<void>((resolve) => {
+        source.onended = () => {
+          recorder.stop();
+          resolve();
+        };
+      });
+
+      const blob = await stopped;
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = `captrix-${selectedPlatform.shortLabel.toLowerCase()}-captioned.webm`;
+      anchor.click();
+      URL.revokeObjectURL(url);
+      await audioContext?.close();
+      setExportMessage({
+        text: "Captioned video exported.",
+        tone: "success"
+      });
+    } catch (error) {
+      setExportMessage({
+        text: error instanceof Error ? error.message : "Video export failed.",
+        tone: "error"
+      });
+    } finally {
+      source.pause();
+      setIsExporting(false);
+    }
   }
 
   function resetStudio() {
@@ -305,7 +489,13 @@ export function CaptionStudio() {
     <main className="h-[100svh] overflow-hidden bg-[#050509] text-white">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_18%,rgba(233,255,18,0.16),transparent_24%),radial-gradient(circle_at_86%_10%,rgba(0,245,212,0.16),transparent_28%),linear-gradient(135deg,#050509_0%,#0b1020_48%,#050509_100%)]" />
       <div className="relative grid h-full min-h-0 grid-rows-[56px_minmax(0,1fr)]">
-        <TopBar status={status} />
+        <TopBar
+          status={status}
+          exportStatus={exportMessage}
+          isExporting={isExporting}
+          onExportVideo={exportCaptionedVideo}
+          onResetStudio={resetStudio}
+        />
 
         <section className="grid min-h-0 p-3" id="editor" aria-labelledby="app-title">
           <h1 id="app-title" className="sr-only">
@@ -317,8 +507,7 @@ export function CaptionStudio() {
               {[
                 { label: "Scene", icon: Film, action: () => setPlatform("youtube-video") },
                 { label: "Frame", icon: Frame, action: () => setPlatform("instagram-reels") },
-                { label: "Caption", icon: Captions, action: suggestCaption },
-                { label: "Export", icon: Download, action: exportCaptionKit }
+                { label: "Caption", icon: Captions, action: suggestCaption }
               ].map((tool, index) => {
                 const Icon = tool.icon;
                 return (
@@ -379,7 +568,6 @@ export function CaptionStudio() {
               platform={platform}
               selectedPlatform={selectedPlatform}
               message={message}
-              exportMessage={exportMessage}
               transcriptionStatus={transcriptionStatus}
               isGeneratingCaptions={isGeneratingCaptions}
               onVideoChange={handleVideoChange}
@@ -388,8 +576,6 @@ export function CaptionStudio() {
               setCaptionSize={setCaptionSize}
               setPlatform={setPlatform}
               generateCaptionsFromVideo={generateCaptionsFromVideo}
-              exportCaptionKit={exportCaptionKit}
-              resetStudio={resetStudio}
             />
           </div>
         </section>
