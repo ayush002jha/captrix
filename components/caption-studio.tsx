@@ -52,12 +52,8 @@ export function CaptionStudio() {
     () => segments.find((segment) => currentTime >= segment.start && currentTime < segment.end) ?? null,
     [currentTime, segments]
   );
-  const selectedSegment = useMemo(
-    () => segments.find((segment) => segment.id === activeSegmentId) ?? null,
-    [activeSegmentId, segments]
-  );
-  const previewCaption = segments.length > 0 ? playbackSegment?.text ?? selectedSegment?.text ?? "" : caption;
-  const activeTimelineSegmentId = playbackSegment?.id ?? activeSegmentId;
+  const previewCaption = segments.length > 0 ? playbackSegment?.text ?? "" : caption;
+  const activeTimelineSegmentId = playbackSegment?.id ?? null;
   const showCaptionActivity =
     isGeneratingCaptions ||
     transcriptionStatus.startsWith("Preparing caption engine") ||
@@ -113,7 +109,13 @@ export function CaptionStudio() {
     setCurrentTime(nextTime);
 
     const matchingSegment = segments.find((segment) => nextTime >= segment.start && nextTime < segment.end);
-    if (!matchingSegment || matchingSegment.id === activeSegmentId) {
+    if (!matchingSegment) {
+      setActiveSegmentId(null);
+      setCaption("");
+      return;
+    }
+
+    if (matchingSegment.id === activeSegmentId) {
       return;
     }
 
