@@ -4,6 +4,7 @@ import { ChangeEvent, useMemo, useState } from "react";
 import { Captions, Film, Frame, Sparkles } from "lucide-react";
 import { generateClientCaptionSegments } from "./studio/client-transcription";
 import { captionSuggestions, platformPresets } from "./studio/data";
+import { ExportModal, type ExportQuality } from "./studio/export-modal";
 import { InspectorPanel } from "./studio/inspector-panel";
 import { PreviewStage } from "./studio/preview-stage";
 import { TimelinePanel } from "./studio/timeline-panel";
@@ -35,6 +36,13 @@ export function CaptionStudio() {
   const [transcriptionStatus, setTranscriptionStatus] = useState("Upload a clip, then generate captions with hosted AI or local fallback.");
   const [isGeneratingCaptions, setIsGeneratingCaptions] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [exportModalOpen, setExportModalOpen] = useState(false);
+  const [exportQuality, setExportQuality] = useState<ExportQuality>("full");
+  const [includeAudio, setIncludeAudio] = useState(true);
+  const [exportProgress, setExportProgress] = useState({
+    percent: 0,
+    etaSeconds: null as number | null
+  });
   const selectedPlatform = platformPresets[platform];
   const status = video ? "Clip loaded" : "Ready for a clip";
   const trackWidth = timelinePercent(start, end);
@@ -219,10 +227,24 @@ export function CaptionStudio() {
 
   function parseExportSize(size: string) {
     const [width, height] = size.split("x").map((part) => Number(part.trim()));
+    const scale = exportQuality === "half" ? 0.5 : 1;
     return {
-      width: Number.isFinite(width) ? width : 1080,
-      height: Number.isFinite(height) ? height : 1920
+      width: Math.round((Number.isFinite(width) ? width : 1080) * scale),
+      height: Math.round((Number.isFinite(height) ? height : 1920) * scale)
     };
+  }
+
+  function openExportModal() {
+    if (!video) {
+      setExportMessage({
+        text: "Upload a valid clip before exporting video.",
+        tone: "error"
+      });
+      return;
+    }
+
+    setExportProgress({ percent: 0, etaSeconds: null });
+    setExportModalOpen(true);
   }
 
   function getCaptionAtTime(time: number) {
@@ -340,6 +362,7 @@ export function CaptionStudio() {
       });
       return;
     }
+    const exportVideo = video;
 
     if (typeof MediaRecorder === "undefined") {
       setExportMessage({
@@ -350,6 +373,7 @@ export function CaptionStudio() {
     }
 
     setIsExporting(true);
+    setExportProgress({ percent: 0, etaSeconds: null });
     setExportMessage({
       text: "Rendering captioned video locally...",
       tone: "neutral"
@@ -392,6 +416,7 @@ export function CaptionStudio() {
     );
     let audioContext: AudioContext | null = null;
     let recorder: MediaRecorder | null = null;
+    const startedAt = performance.now();
 
     try {
       if (source.readyState < 1) {
@@ -404,15 +429,17 @@ export function CaptionStudio() {
 
       const canvasStream = canvas.captureStream(30);
 
-      try {
-        audioContext = new AudioContext();
-        const audioSource = audioContext.createMediaElementSource(source);
-        const audioDestination = audioContext.createMediaStreamDestination();
-        audioSource.connect(audioDestination);
-        audioDestination.stream.getAudioTracks().forEach((track) => canvasStream.addTrack(track));
-        await audioContext.resume();
-      } catch {
-        audioContext = null;
+      if (includeAudio) {
+        try {
+          audioContext = new AudioContext();
+          const audioSource = audioContext.createMediaElementSource(source);
+          const audioDestination = audioContext.createMediaStreamDestination();
+          audioSource.connect(audioDestination);
+          audioDestination.stream.getAudioTracks().forEach((track) => canvasStream.addTrack(track));
+          await audioContext.resume();
+        } catch {
+          audioContext = null;
+        }
       }
 
       const activeRecorder = new MediaRecorder(canvasStream, mimeType ? { mimeType } : undefined);
@@ -428,6 +455,12 @@ export function CaptionStudio() {
       });
 
       function drawFrame() {
+        const duration = source.duration || exportVideo.duration || 1;
+        const percent = Math.min(99, (source.currentTime / duration) * 100);
+        const elapsedSeconds = (performance.now() - startedAt) / 1000;
+        const etaSeconds = percent > 1 ? Math.max(1, (elapsedSeconds / percent) * (100 - percent)) : null;
+        setExportProgress({ percent, etaSeconds });
+
         renderContext.fillStyle = "#050509";
         renderContext.fillRect(0, 0, width, height);
 
@@ -457,17 +490,18 @@ export function CaptionStudio() {
       });
 
       const blob = await stopped;
+      setExportProgress({ percent: 100, etaSeconds: 0 });
       const url = URL.createObjectURL(blob);
       const anchor = document.createElement("a");
       anchor.href = url;
       anchor.download = `captrix-${selectedPlatform.shortLabel.toLowerCase()}-captioned.webm`;
       anchor.click();
       URL.revokeObjectURL(url);
-      await audioContext?.close();
       setExportMessage({
         text: "Captioned video exported.",
         tone: "success"
       });
+      setExportModalOpen(false);
     } catch (error) {
       setExportMessage({
         text: error instanceof Error ? error.message : "Video export failed.",
@@ -478,7 +512,9 @@ export function CaptionStudio() {
       if (recorder?.state === "recording") {
         recorder.stop();
       }
-      await audioContext?.close();
+      if (audioContext && audioContext.state !== "closed") {
+        await audioContext.close();
+      }
       source.removeAttribute("src");
       source.load();
       source.remove();
@@ -503,6 +539,8 @@ export function CaptionStudio() {
       tone: "neutral"
     });
     setExportMessage({ text: "", tone: "neutral" });
+    setExportProgress({ percent: 0, etaSeconds: null });
+    setExportModalOpen(false);
     setTranscriptionStatus("Upload a clip, then generate captions with hosted AI or local fallback.");
   }
 
@@ -514,7 +552,7 @@ export function CaptionStudio() {
           status={status}
           exportStatus={exportMessage}
           isExporting={isExporting}
-          onExportVideo={exportCaptionedVideo}
+          onExportVideo={openExportModal}
           onResetStudio={resetStudio}
         />
 
@@ -600,6 +638,20 @@ export function CaptionStudio() {
             />
           </div>
         </section>
+        <ExportModal
+          open={exportModalOpen}
+          formatLabel={selectedPlatform.label}
+          exportSize={selectedPlatform.size}
+          quality={exportQuality}
+          includeAudio={includeAudio}
+          isExporting={isExporting}
+          progress={exportProgress}
+          status={exportMessage}
+          onQualityChange={setExportQuality}
+          onIncludeAudioChange={setIncludeAudio}
+          onClose={() => setExportModalOpen(false)}
+          onStartExport={exportCaptionedVideo}
+        />
       </div>
     </main>
   );
