@@ -147,10 +147,10 @@ export function TimelinePanel({
               style={{ width: "100%", transform: `scaleX(${playheadPercent / 100})` }}
             />
             <div
-              className="pointer-events-none absolute inset-y-1.5 z-[3] w-px bg-[#e9ff12] shadow-[0_0_18px_rgba(233,255,18,0.75)] transition-[left] duration-150"
+              className="pointer-events-none absolute inset-y-1.5 z-[3] w-[2px] bg-[#ff4d1a] shadow-[0_0_18px_rgba(255,77,26,0.82)] transition-[left] duration-150"
               style={{ left: `${playheadLeft}px` }}
             >
-              <span className="absolute -left-1.5 -top-1 grid size-3 place-items-center rounded-full bg-[#e9ff12] shadow-[0_0_16px_rgba(233,255,18,0.7)]" />
+              <span className="absolute -left-1.5 -top-1 grid size-3 place-items-center rounded-full bg-[#ff4d1a] shadow-[0_0_16px_rgba(255,77,26,0.82)]" />
             </div>
             <div className="captrix-timeline-sweep pointer-events-none absolute inset-y-2 left-0 w-28 rounded-full bg-[linear-gradient(90deg,transparent,rgba(233,255,18,0.22),rgba(0,245,212,0.18),transparent)] blur-sm" />
             {segments.length > 0 ? (
