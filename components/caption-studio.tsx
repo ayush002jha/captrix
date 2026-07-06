@@ -486,8 +486,10 @@ export function CaptionStudio() {
 
       function drawFrame() {
         const duration = source.duration || exportVideo.duration || 1;
-        const percent = Math.min(99, (source.currentTime / duration) * 100);
         const elapsedSeconds = (performance.now() - startedAt) / 1000;
+        const mediaPercent = (source.currentTime / duration) * 100;
+        const elapsedPercent = (elapsedSeconds / duration) * 100;
+        const percent = Math.min(99, Math.max(mediaPercent, elapsedPercent));
         const etaSeconds = percent > 1 ? Math.max(1, (elapsedSeconds / percent) * (100 - percent)) : null;
         setExportProgress({ percent, etaSeconds });
 

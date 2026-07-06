@@ -70,6 +70,9 @@ export function ExportModal({
     return null;
   }
 
+  const visiblePercent = Math.max(isExporting && progress.percent > 0 ? 4 : 0, Math.min(100, progress.percent));
+  const roundedPercent = Math.max(0, Math.min(100, Math.round(progress.percent)));
+
   return (
     <div className="fixed inset-0 z-50 grid place-items-center bg-black/65 p-4 backdrop-blur-md" role="dialog" aria-modal="true" aria-label="Export video">
       <section className="w-full max-w-[520px] overflow-hidden rounded-[1.75rem] border border-white/10 bg-[#12141d] shadow-[0_32px_120px_rgba(0,0,0,0.55)]">
@@ -159,12 +162,14 @@ export function ExportModal({
           <div className="rounded-2xl border border-white/10 bg-black/20 p-3">
             <div className="mb-2 flex items-center justify-between gap-3">
               <span className="text-xs font-black uppercase text-white/45">Progress</span>
-              <strong className="text-xs font-black text-white">ETA {formatEta(progress.etaSeconds)}</strong>
+              <strong className="text-xs font-black text-white">
+                {roundedPercent}% · ETA {formatEta(progress.etaSeconds)}
+              </strong>
             </div>
             <div className="h-2 overflow-hidden rounded-full bg-white/10">
               <div
                 className="h-full rounded-full bg-[#e9ff12] transition-[width]"
-                style={{ width: `${Math.max(0, Math.min(100, progress.percent))}%` }}
+                style={{ width: `${visiblePercent}%` }}
               />
             </div>
             <p className={`mt-2 min-h-4 text-xs ${statusClass[status.tone]}`}>{status.text}</p>
