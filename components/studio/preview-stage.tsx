@@ -69,8 +69,8 @@ export function PreviewStage({
   return (
     <section className="grid min-h-0 grid-rows-[minmax(0,1fr)_auto] gap-3 overflow-hidden rounded-[1.75rem] border border-white/10 bg-black/35 p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
       <div
-        className={`relative grid min-h-0 place-items-center overflow-hidden rounded-[1.35rem] border bg-[radial-gradient(circle_at_28%_18%,rgba(233,255,18,0.12),transparent_28%),linear-gradient(140deg,rgba(11,18,32,0.95),rgba(10,10,12,0.96))] p-3 ${
-          isGeneratingCaptions ? "captrix-ai-border-pulse border-[#e9ff12]/70" : "border-white/10"
+        className={`relative grid min-h-0 place-items-center overflow-hidden rounded-[1.35rem] bg-[radial-gradient(circle_at_28%_18%,rgba(233,255,18,0.12),transparent_28%),linear-gradient(140deg,rgba(11,18,32,0.95),rgba(10,10,12,0.96))] p-3 ${
+          isGeneratingCaptions ? "captrix-ai-border-pulse border-[3px] border-[#e9ff12]" : "border border-white/10"
         }`}
         aria-busy={isGeneratingCaptions}
         aria-label={isGeneratingCaptions ? generationStatus : undefined}
