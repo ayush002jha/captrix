@@ -31,7 +31,7 @@ const studioPresets: StudioPreset[] = [
     platform: "instagram-reels",
     style: "creator",
     position: "bottom",
-    captionSize: 30
+    captionSize: 22
   },
   {
     label: "Hook",
@@ -40,7 +40,7 @@ const studioPresets: StudioPreset[] = [
     platform: "youtube-shorts",
     style: "meme",
     position: "middle",
-    captionSize: 34
+    captionSize: 22
   },
   {
     label: "Wide",
@@ -49,7 +49,7 @@ const studioPresets: StudioPreset[] = [
     platform: "youtube-video",
     style: "minimal",
     position: "bottom",
-    captionSize: 24
+    captionSize: 22
   },
   {
     label: "Feed",
@@ -58,7 +58,7 @@ const studioPresets: StudioPreset[] = [
     platform: "instagram-feed",
     style: "neon",
     position: "bottom",
-    captionSize: 28
+    captionSize: 22
   }
 ];
 
@@ -71,7 +71,7 @@ export function CaptionStudio() {
   const [seekRequest, setSeekRequest] = useState({ time: 0, nonce: 0 });
   const [style, setStyle] = useState<CaptionStyle>("creator");
   const [position, setPosition] = useState<CaptionPosition>("bottom");
-  const [captionSize, setCaptionSize] = useState(30);
+  const [captionSize, setCaptionSize] = useState(22);
   const [platform, setPlatform] = useState<PlatformKey>("instagram-reels");
   const [start, setStart] = useState(0);
   const [end, setEnd] = useState(8);
@@ -420,7 +420,7 @@ export function CaptionStudio() {
         context.fill();
       }
 
-      context.lineWidth = style === "meme" ? fontSize * 0.13 : fontSize * 0.08;
+      context.lineWidth = style === "meme" ? fontSize * 0.1 : fontSize * 0.08;
       context.strokeStyle = style === "neon" ? "#00f5d4" : "#050509";
       context.shadowColor = style === "neon" ? "#e9ff12" : "rgba(0,0,0,0.85)";
       context.shadowBlur = style === "neon" ? fontSize * 0.35 : fontSize * 0.18;
@@ -666,6 +666,7 @@ export function CaptionStudio() {
                   key={preset.label}
                   type="button"
                   title={preset.title}
+                  data-testid={`studio-preset-${preset.label.toLowerCase()}`}
                   onClick={() => applyStudioPreset(preset)}
                 >
                   <Icon aria-hidden="true" size={22} strokeWidth={2.4} />

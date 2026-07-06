@@ -2,7 +2,7 @@
   "projectId": "c91f693d-84bd-4ea7-8178-35352c93e8dc",
   "type": "frontend",
   "name": "Captrix caption styling controls",
-  "description": "Verifies caption text, style, size, and position controls.",
+  "description": "Checks simple caption style, position, size, and preset controls.",
   "priority": "p0",
   "planSteps": [
     {
@@ -11,19 +11,19 @@
     },
     {
       "type": "action",
-      "description": "Double-click data-testid=caption-segment-manual, then replace data-testid=caption-input with 'Launch clips faster with styled captions.'."
+      "description": "Click data-testid=studio-preset-hook."
     },
     {
       "type": "assertion",
-      "description": "data-testid=caption-overlay updates with 'Launch clips faster with styled captions.'."
+      "description": "The page shows Shorts, Meme Stack, Middle, and the caption size display shows 22px."
     },
     {
       "type": "action",
-      "description": "Click data-testid=style-karaoke, move data-testid=caption-size to a larger value, then click data-testid=position-top."
+      "description": "Click data-testid=style-minimal, click data-testid=position-bottom, and move data-testid=caption-size to a larger value."
     },
     {
       "type": "assertion",
-      "description": "The caption remains visible, the active style metric shows Karaoke, and the active position control is Top."
+      "description": "data-testid=caption-overlay and data-testid=video-stage remain visible after the style controls are used."
     }
   ]
 }

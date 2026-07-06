@@ -2,7 +2,7 @@
   "projectId": "c91f693d-84bd-4ea7-8178-35352c93e8dc",
   "type": "frontend",
   "name": "Captrix export guard",
-  "description": "Verifies that Captrix prevents video export before a valid clip is loaded.",
+  "description": "Checks that export is blocked until a valid video is loaded.",
   "priority": "p0",
   "planSteps": [
     {
@@ -10,12 +10,16 @@
       "description": "Open https://captrix-ai.vercel.app/."
     },
     {
+      "type": "assertion",
+      "description": "data-testid=export-kit and data-testid=reset-studio are visible."
+    },
+    {
       "type": "action",
-      "description": "Click data-testid=reset-studio, then click data-testid=export-kit without uploading a video."
+      "description": "Click data-testid=reset-studio, then click data-testid=export-kit."
     },
     {
       "type": "assertion",
-      "description": "The app prevents export and shows that a valid clip is required before exporting."
+      "description": "The page shows that a valid clip is required before exporting, and data-testid=export-kit remains visible."
     }
   ]
 }

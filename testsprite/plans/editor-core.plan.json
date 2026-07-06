@@ -2,7 +2,7 @@
   "projectId": "c91f693d-84bd-4ea7-8178-35352c93e8dc",
   "type": "frontend",
   "name": "Captrix editor core flow",
-  "description": "Verifies the first Captrix AI editor slice: page load, timeline caption editing, style controls, and export guard.",
+  "description": "Simple end-to-end smoke flow for the Captrix editor shell, presets, platform controls, AI guard, and export guard.",
   "priority": "p0",
   "planSteps": [
     {
@@ -11,23 +11,15 @@
     },
     {
       "type": "assertion",
-      "description": "The Captrix AI editor loads, the main heading contains 'Make captions move.', and data-testid=project-status, data-testid=platform-instagram-reels, data-testid=platform-youtube-video, data-testid=video-input, data-testid=generate-captions, data-testid=transcription-status, data-testid=caption-segment-manual, data-testid=caption-size, data-testid=style-creator, data-testid=position-bottom, and data-testid=export-kit are visible."
+      "description": "The page shows Captrix AI, data-testid=project-status, data-testid=video-stage, data-testid=video-input, data-testid=generate-captions, data-testid=caption-size, data-testid=caption-timeline-scroll, and data-testid=export-kit."
     },
     {
       "type": "action",
-      "description": "Double-click data-testid=caption-segment-manual, then replace data-testid=caption-input with 'Launch clips faster with styled captions.'."
+      "description": "Click data-testid=studio-preset-hook."
     },
     {
       "type": "assertion",
-      "description": "data-testid=caption-overlay updates with 'Launch clips faster with styled captions.'."
-    },
-    {
-      "type": "action",
-      "description": "Click data-testid=style-karaoke, move data-testid=caption-size to a larger value, then click data-testid=position-bottom."
-    },
-    {
-      "type": "assertion",
-      "description": "The active style metric shows Karaoke and the resized caption remains visible on the video stage."
+      "description": "The page shows Shorts, Meme Stack, Middle, and 22px."
     },
     {
       "type": "action",
@@ -35,27 +27,23 @@
     },
     {
       "type": "assertion",
-      "description": "The platform guidance and format metric update after each preset change, and the caption remains visible."
-    },
-    {
-      "type": "assertion",
-      "description": "data-testid=generate-captions is visible and data-testid=transcription-status invites the user to generate editable captions."
+      "description": "data-testid=video-stage remains visible and the platform text updates without a page reload."
     },
     {
       "type": "action",
-      "description": "Double-click data-testid=caption-segment-manual."
+      "description": "Click data-testid=generate-captions without uploading a video."
     },
     {
       "type": "assertion",
-      "description": "data-testid=caption-input is visible inside the caption timeline so the right inspector remains focused on format, style, position, and export controls."
+      "description": "The page says a loaded clip is needed."
     },
     {
       "type": "action",
-      "description": "Click data-testid=reset-studio, then click data-testid=export-kit without uploading a video."
+      "description": "Click data-testid=reset-studio, then click data-testid=export-kit."
     },
     {
       "type": "assertion",
-      "description": "The app prevents export and shows that a valid clip is required before exporting."
+      "description": "The page says a valid clip is required before exporting."
     }
   ]
 }

@@ -26,9 +26,9 @@ const captionPositionClass: Record<CaptionPosition, string> = {
 
 const captionStyleClass: Record<CaptionStyle, string> = {
   creator:
-    "bg-[#e9ff12] px-2 py-1 text-black shadow-[5px_5px_0_rgba(0,0,0,0.85)] [text-shadow:2px_2px_0_rgba(255,255,255,0.7)]",
+    "rounded-[0.18em] bg-[#e9ff12] px-[0.32em] py-[0.14em] text-black shadow-[0_2px_0_rgba(0,0,0,0.92),0_8px_18px_rgba(0,0,0,0.34)] [box-decoration-break:clone] [-webkit-box-decoration-break:clone]",
   karaoke: "border-b-[0.16em] border-[#e9ff12] text-white drop-shadow-[0_8px_18px_rgba(0,0,0,0.85)]",
-  meme: "font-black text-white [font-family:Impact,Haettenschweiler,'Arial_Narrow_Bold',sans-serif] [text-shadow:3px_3px_0_#000,-3px_3px_0_#000,3px_-3px_0_#000,-3px_-3px_0_#000]",
+  meme: "font-black text-white drop-shadow-[0_5px_10px_rgba(0,0,0,0.55)] [font-family:Impact,Haettenschweiler,'Arial_Narrow_Bold',sans-serif] [text-shadow:2px_2px_0_#000,-2px_2px_0_#000,2px_-2px_0_#000,-2px_-2px_0_#000,0_2px_0_#000]",
   minimal: "rounded-xl bg-black/70 px-4 py-3 font-bold normal-case text-white",
   neon: "text-white [text-shadow:0_0_12px_#e9ff12,0_0_24px_#00f5d4,0_6px_18px_#000]"
 };

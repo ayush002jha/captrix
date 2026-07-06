@@ -1,5 +1,5 @@
 import type { CaptionSegment } from "./types";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { PointerEvent as ReactPointerEvent, useEffect, useMemo, useRef, useState } from "react";
 
 type TimelinePanelProps = {
   caption: string;
@@ -102,6 +102,41 @@ export function TimelinePanel({
     setEditingSegmentId(null);
   }
 
+  function resizeSegment(
+    segment: CaptionSegment,
+    edge: "start" | "end",
+    event: ReactPointerEvent<HTMLSpanElement>
+  ) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const initialClientX = event.clientX;
+    const initialStart = segment.start;
+    const initialEnd = segment.end;
+    const minimumDuration = 0.35;
+
+    function handlePointerMove(pointerEvent: PointerEvent) {
+      const deltaSeconds = ((pointerEvent.clientX - initialClientX) / trackPixelWidth) * safeDuration;
+
+      if (edge === "start") {
+        const nextStart = Math.max(0, Math.min(initialEnd - minimumDuration, initialStart + deltaSeconds));
+        onUpdateSegment(segment.id, { start: Number(nextStart.toFixed(2)) });
+        return;
+      }
+
+      const nextEnd = Math.min(safeDuration, Math.max(initialStart + minimumDuration, initialEnd + deltaSeconds));
+      onUpdateSegment(segment.id, { end: Number(nextEnd.toFixed(2)) });
+    }
+
+    function handlePointerUp() {
+      window.removeEventListener("pointermove", handlePointerMove);
+      window.removeEventListener("pointerup", handlePointerUp);
+    }
+
+    window.addEventListener("pointermove", handlePointerMove);
+    window.addEventListener("pointerup", handlePointerUp, { once: true });
+  }
+
   function formatTick(seconds: number) {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = Math.round(seconds % 60);
@@ -114,7 +149,7 @@ export function TimelinePanel({
         <div>
           <span className="text-[10px] font-black uppercase text-white/40">Caption timeline</span>
           <p className="mt-1 text-xs text-white/45">
-            {segments.length > 0 ? `${segments.length} generated segments. Empty gaps stay silent.` : "Manual caption layer"}
+            {segments.length > 0 ? `${segments.length} generated segments. Drag edges to adjust timing.` : "Manual caption layer"}
           </p>
         </div>
         <strong className="text-xs font-black text-white">
@@ -194,7 +229,17 @@ export function TimelinePanel({
                     onClick={() => onSelectSegment(segment)}
                     onDoubleClick={() => beginEditing(segment.id, segment.text)}
                   >
+                    <span
+                      aria-hidden="true"
+                      className="absolute inset-y-1 left-1 z-[2] w-2 cursor-ew-resize rounded-full bg-white/45 opacity-80 transition hover:bg-white"
+                      onPointerDown={(event) => resizeSegment(segment, "start", event)}
+                    />
                     <span className="truncate">{segment.text}</span>
+                    <span
+                      aria-hidden="true"
+                      className="absolute inset-y-1 right-1 z-[2] w-2 cursor-ew-resize rounded-full bg-white/45 opacity-80 transition hover:bg-white"
+                      onPointerDown={(event) => resizeSegment(segment, "end", event)}
+                    />
                   </button>
               );
             })}
