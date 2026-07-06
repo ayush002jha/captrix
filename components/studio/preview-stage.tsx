@@ -12,6 +12,8 @@ type PreviewStageProps = {
   platform: PlatformPreset;
   segmentCount: number;
   seekRequest: { time: number; nonce: number };
+  isGeneratingCaptions: boolean;
+  generationStatus: string;
   onTimeUpdate: (time: number) => void;
 };
 
@@ -47,6 +49,8 @@ export function PreviewStage({
   platform,
   segmentCount,
   seekRequest,
+  isGeneratingCaptions,
+  generationStatus,
   onTimeUpdate
 }: PreviewStageProps) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -64,8 +68,12 @@ export function PreviewStage({
 
   return (
     <section className="grid min-h-0 grid-rows-[minmax(0,1fr)_auto] gap-3 overflow-hidden rounded-[1.75rem] border border-white/10 bg-black/35 p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
-      <div className="grid min-h-0 place-items-center overflow-hidden rounded-[1.35rem] bg-[radial-gradient(circle_at_28%_18%,rgba(233,255,18,0.12),transparent_28%),linear-gradient(140deg,rgba(11,18,32,0.95),rgba(10,10,12,0.96))] p-3">
-        <div className={`relative grid max-h-full min-h-0 gap-2 ${frameClass[platform.frame]}`}>
+      <div className="relative grid min-h-0 place-items-center overflow-hidden rounded-[1.35rem] bg-[radial-gradient(circle_at_28%_18%,rgba(233,255,18,0.12),transparent_28%),linear-gradient(140deg,rgba(11,18,32,0.95),rgba(10,10,12,0.96))] p-3">
+        {isGeneratingCaptions ? (
+          <div className="captrix-ai-mesh pointer-events-none absolute inset-0 z-0" />
+        ) : null}
+
+        <div className={`relative z-10 grid max-h-full min-h-0 gap-2 ${frameClass[platform.frame]}`}>
           <div className="flex min-h-6 items-center justify-between gap-3 px-2 text-[11px] font-black text-white/65">
             <span>{platform.shortLabel}</span>
             <strong>{platform.size}</strong>
@@ -116,6 +124,34 @@ export function PreviewStage({
             <div className="pointer-events-none absolute inset-[11%_10%] z-[5] rounded-2xl border border-dashed border-white/25" />
           </div>
         </div>
+
+        {isGeneratingCaptions ? (
+          <div className="pointer-events-none absolute inset-0 z-[12] overflow-hidden rounded-[1.35rem]" aria-live="polite" aria-label="Generating captions">
+            <div className="captrix-ai-grid absolute inset-0 opacity-20" />
+            <div className="absolute left-5 top-5 flex items-center gap-2 rounded-full border border-[#00f5d4]/25 bg-black/35 px-3 py-2 text-[10px] font-black uppercase text-[#00f5d4] shadow-[0_0_24px_rgba(0,245,212,0.14)]">
+              <span className="size-2 rounded-full bg-[#00f5d4] shadow-[0_0_12px_rgba(0,245,212,0.8)]" />
+              Reading speech
+            </div>
+            <div className="absolute right-5 top-5 flex items-center gap-2 rounded-full border border-[#e9ff12]/30 bg-black/35 px-3 py-2 text-[10px] font-black uppercase text-[#e9ff12] shadow-[0_0_24px_rgba(233,255,18,0.14)]">
+              <span className="size-2 rounded-full bg-[#e9ff12] shadow-[0_0_12px_rgba(233,255,18,0.8)]" />
+              Syncing timing
+            </div>
+            <div className="absolute bottom-5 left-1/2 w-[min(30rem,calc(100%-2.5rem))] -translate-x-1/2 rounded-2xl border border-white/12 bg-black/55 p-3 shadow-[0_24px_80px_rgba(0,0,0,0.38)] backdrop-blur-md">
+              <div className="flex items-center gap-3">
+                <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-[#e9ff12] text-sm font-black text-black shadow-[0_0_28px_rgba(233,255,18,0.28)]">
+                  AI
+                </span>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center justify-between gap-3">
+                    <strong className="truncate text-sm font-black text-white">Designing captions</strong>
+                    <span className="captrix-ai-dots h-1.5 w-12 rounded-full bg-white/15" />
+                  </div>
+                  <span className="mt-1 block truncate text-xs font-bold text-white/60">{generationStatus}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : null}
       </div>
 
       <div className="grid grid-cols-4 overflow-hidden rounded-2xl border border-white/10 bg-white/[0.06]">

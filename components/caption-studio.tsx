@@ -58,6 +58,12 @@ export function CaptionStudio() {
   );
   const previewCaption = segments.length > 0 ? playbackSegment?.text ?? selectedSegment?.text ?? "" : caption;
   const activeTimelineSegmentId = playbackSegment?.id ?? activeSegmentId;
+  const showCaptionActivity =
+    isGeneratingCaptions ||
+    transcriptionStatus.startsWith("Preparing caption engine") ||
+    transcriptionStatus.startsWith("Preparing speech recognition") ||
+    transcriptionStatus.startsWith("Analyzing speech") ||
+    transcriptionStatus.startsWith("Trying another captioning method");
 
   function syncActiveSegment(nextSegment: Partial<CaptionSegment>) {
     if (!activeSegmentId) {
@@ -635,6 +641,8 @@ export function CaptionStudio() {
                 platform={selectedPlatform}
                 segmentCount={segments.length}
                 seekRequest={seekRequest}
+                isGeneratingCaptions={showCaptionActivity}
+                generationStatus={transcriptionStatus}
                 onTimeUpdate={handlePlaybackTimeUpdate}
               />
               <TimelinePanel
@@ -643,6 +651,7 @@ export function CaptionStudio() {
                 end={end}
                 width={trackWidth}
                 duration={video?.duration ?? 120}
+                currentTime={currentTime}
                 segments={segments}
                 activeSegmentId={activeTimelineSegmentId}
                 onSelectSegment={selectSegment}

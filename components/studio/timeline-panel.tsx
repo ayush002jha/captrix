@@ -7,6 +7,7 @@ type TimelinePanelProps = {
   end: number;
   width: number;
   duration: number;
+  currentTime: number;
   segments: CaptionSegment[];
   activeSegmentId: string | null;
   onSelectSegment: (segment: CaptionSegment) => void;
@@ -20,6 +21,7 @@ export function TimelinePanel({
   end,
   width,
   duration,
+  currentTime,
   segments,
   activeSegmentId,
   onSelectSegment,
@@ -27,6 +29,7 @@ export function TimelinePanel({
   onUpdateManualCaption
 }: TimelinePanelProps) {
   const safeDuration = Math.max(1, duration);
+  const playheadPercent = Math.max(0, Math.min(100, (currentTime / safeDuration) * 100));
   const [editingSegmentId, setEditingSegmentId] = useState<string | null>(null);
   const [draftText, setDraftText] = useState("");
 
@@ -78,8 +81,20 @@ export function TimelinePanel({
         </strong>
       </div>
       <div className="relative min-h-16 overflow-hidden rounded-2xl border border-white/10 bg-[repeating-linear-gradient(90deg,rgba(255,255,255,0.08)_0_1px,transparent_1px_52px)] p-2">
+        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(233,255,18,0.06),rgba(0,245,212,0.07),transparent)]" />
+        <div
+          className="pointer-events-none absolute inset-y-0 left-0 origin-left bg-[linear-gradient(90deg,rgba(233,255,18,0.18),rgba(0,245,212,0.10),transparent)] transition-transform duration-150"
+          style={{ width: "100%", transform: `scaleX(${playheadPercent / 100})` }}
+        />
+        <div
+          className="pointer-events-none absolute inset-y-1.5 w-px bg-[#e9ff12] shadow-[0_0_18px_rgba(233,255,18,0.75)] transition-[left] duration-150"
+          style={{ left: `${playheadPercent}%` }}
+        >
+          <span className="absolute -left-1.5 -top-1 grid size-3 place-items-center rounded-full bg-[#e9ff12] shadow-[0_0_16px_rgba(233,255,18,0.7)]" />
+        </div>
+        <div className="captrix-timeline-sweep pointer-events-none absolute inset-y-2 left-0 w-28 rounded-full bg-[linear-gradient(90deg,transparent,rgba(233,255,18,0.22),rgba(0,245,212,0.18),transparent)] blur-sm" />
         {segments.length > 0 ? (
-          <div className="relative h-12">
+          <div className="relative z-[1] h-12">
             {segments.map((segment) => {
               const left = Math.max(0, Math.min(96, (segment.start / safeDuration) * 100));
               const segmentWidth = Math.max(8, Math.min(100 - left, ((segment.end - segment.start) / safeDuration) * 100));
@@ -125,7 +140,7 @@ export function TimelinePanel({
         ) : editingSegmentId === "manual" ? (
           <input
             autoFocus
-            className="h-12 min-w-40 max-w-full rounded-xl border border-[#e9ff12] bg-black/80 px-3 text-xs font-black text-white outline-none shadow-[0_0_20px_rgba(233,255,18,0.2)]"
+            className="relative z-[1] h-12 min-w-40 max-w-full rounded-xl border border-[#e9ff12] bg-black/80 px-3 text-xs font-black text-white outline-none shadow-[0_0_20px_rgba(233,255,18,0.2)]"
             data-testid="caption-input"
             style={{ width: `${width}%` }}
             value={draftText}
@@ -143,7 +158,7 @@ export function TimelinePanel({
           />
         ) : (
           <button
-            className="flex h-12 min-w-40 max-w-full items-center overflow-hidden rounded-xl border border-white/10 bg-[#0b63f6] px-3 text-left text-xs font-black text-white transition hover:bg-[#2d7dff]"
+            className="relative z-[1] flex h-12 min-w-40 max-w-full items-center overflow-hidden rounded-xl border border-white/10 bg-[#0b63f6] px-3 text-left text-xs font-black text-white transition hover:bg-[#2d7dff]"
             type="button"
             data-testid="caption-segment-manual"
             style={{ width: `${width}%` }}

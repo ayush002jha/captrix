@@ -31,6 +31,96 @@ button {
   cursor: pointer;
 }
 
+.captrix-ai-grid {
+  background-image:
+    linear-gradient(rgba(233, 255, 18, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 245, 212, 0.06) 1px, transparent 1px);
+  background-size: 34px 34px;
+  mask-image: radial-gradient(ellipse at 50% 48%, black, transparent 76%);
+  animation: captrix-ai-grid 2.4s linear infinite;
+}
+
+.captrix-ai-mesh {
+  inset: -45%;
+  background:
+    radial-gradient(circle at 78% 78%, rgba(233, 255, 18, 0.58), rgba(0, 245, 212, 0.28) 18%, transparent 42%),
+    radial-gradient(circle at 88% 88%, rgba(255, 56, 86, 0.34), transparent 36%),
+    radial-gradient(circle at 18% 28%, rgba(0, 245, 212, 0.34), transparent 36%),
+    linear-gradient(315deg, transparent 20%, rgba(233, 255, 18, 0.2) 44%, rgba(0, 245, 212, 0.18) 56%, transparent 78%);
+  background-repeat: no-repeat;
+  background-size: 70% 70%, 62% 62%, 58% 58%, 120% 120%;
+  filter: saturate(1.4) blur(2px);
+  opacity: 0.98;
+  animation: captrix-ai-mesh 2.4s ease-in-out infinite;
+}
+
+.captrix-ai-dots {
+  background: linear-gradient(90deg, rgba(233, 255, 18, 0.95) 0 28%, rgba(255, 255, 255, 0.15) 28% 100%);
+  background-size: 220% 100%;
+  animation: captrix-ai-dots 1s steps(3, end) infinite;
+}
+
+.captrix-timeline-sweep {
+  animation: captrix-timeline-sweep 2.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@keyframes captrix-ai-grid {
+  from {
+    background-position: 0 0, 0 0;
+  }
+
+  to {
+    background-position: 34px 34px, 34px 34px;
+  }
+}
+
+@keyframes captrix-ai-mesh {
+  0%,
+  100% {
+    background-position: 102% 102%, 92% 94%, 12% 76%, 100% 100%;
+    transform: translate3d(12%, 12%, 0) scale(1.03);
+  }
+
+  45% {
+    background-position: 58% 60%, 62% 64%, 34% 48%, 48% 48%;
+    transform: translate3d(-2%, -2%, 0) scale(1.08);
+  }
+
+  78% {
+    background-position: 8% 8%, 14% 14%, 56% 22%, 0% 0%;
+    transform: translate3d(-12%, -12%, 0) scale(1.04);
+  }
+}
+
+@keyframes captrix-ai-dots {
+  from {
+    background-position: 100% 0;
+  }
+
+  to {
+    background-position: 0 0;
+  }
+}
+@keyframes captrix-timeline-sweep {
+  0% {
+    transform: translateX(-120%);
+    opacity: 0;
+  }
+
+  15% {
+    opacity: 0.9;
+  }
+
+  70% {
+    opacity: 0.7;
+  }
+
+  100% {
+    transform: translateX(calc(100vw + 120%));
+    opacity: 0;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
