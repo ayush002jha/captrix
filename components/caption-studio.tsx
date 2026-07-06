@@ -34,7 +34,6 @@ export function CaptionStudio() {
   });
   const [transcriptionStatus, setTranscriptionStatus] = useState("Upload a clip, then generate captions with hosted AI or local fallback.");
   const [isGeneratingCaptions, setIsGeneratingCaptions] = useState(false);
-  const coach = useMemo(() => analyzeCaption(caption), [caption]);
   const selectedPlatform = platformPresets[platform];
   const status = video ? "Clip loaded" : "Ready for a clip";
   const trackWidth = timelinePercent(start, end);
@@ -64,14 +63,24 @@ export function CaptionStudio() {
     syncActiveSegment({ text: nextCaption });
   }
 
-  function updateStart(nextStart: number) {
-    setStart(nextStart);
-    syncActiveSegment({ start: nextStart });
-  }
+  function updateSegment(segmentId: string, updates: Partial<CaptionSegment>) {
+    setSegments((currentSegments) =>
+      currentSegments.map((segment) => (segment.id === segmentId ? { ...segment, ...updates } : segment))
+    );
 
-  function updateEnd(nextEnd: number) {
-    setEnd(nextEnd);
-    syncActiveSegment({ end: nextEnd });
+    if (segmentId !== activeSegmentId) {
+      return;
+    }
+
+    if (updates.text !== undefined) {
+      setCaption(updates.text);
+    }
+    if (updates.start !== undefined) {
+      setStart(updates.start);
+    }
+    if (updates.end !== undefined) {
+      setEnd(updates.end);
+    }
   }
 
   function selectSegment(segment: CaptionSegment) {
@@ -353,38 +362,31 @@ export function CaptionStudio() {
                 start={start}
                 end={end}
                 width={trackWidth}
-                platform={selectedPlatform}
                 duration={video?.duration ?? 120}
                 segments={segments}
                 activeSegmentId={activeTimelineSegmentId}
                 onSelectSegment={selectSegment}
+                onUpdateSegment={updateSegment}
+                onUpdateManualCaption={updateCaption}
               />
             </section>
 
             <InspectorPanel
-              caption={caption}
               segments={segments}
               style={style}
               position={position}
               captionSize={captionSize}
               platform={platform}
               selectedPlatform={selectedPlatform}
-              coach={coach}
               message={message}
               exportMessage={exportMessage}
               transcriptionStatus={transcriptionStatus}
               isGeneratingCaptions={isGeneratingCaptions}
-              start={start}
-              end={end}
               onVideoChange={handleVideoChange}
-              setCaption={updateCaption}
               setStyle={setStyle}
               setPosition={setPosition}
               setCaptionSize={setCaptionSize}
               setPlatform={setPlatform}
-              setStart={updateStart}
-              setEnd={updateEnd}
-              suggestCaption={suggestCaption}
               generateCaptionsFromVideo={generateCaptionsFromVideo}
               exportCaptionKit={exportCaptionKit}
               resetStudio={resetStudio}

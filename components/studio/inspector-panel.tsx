@@ -4,33 +4,21 @@ import { platformOrder, platformPresets, styleLabels } from "./data";
 import type { CaptionPosition, CaptionSegment, CaptionStyle, PlatformKey, PlatformPreset, Tone } from "./types";
 
 type InspectorPanelProps = {
-  caption: string;
   segments: CaptionSegment[];
   style: CaptionStyle;
   position: CaptionPosition;
   captionSize: number;
   platform: PlatformKey;
   selectedPlatform: PlatformPreset;
-  coach: {
-    score: number;
-    summary: string;
-    signals: string[];
-  };
   message: { text: string; tone: Tone };
   exportMessage: { text: string; tone: Tone };
   transcriptionStatus: string;
   isGeneratingCaptions: boolean;
-  start: number;
-  end: number;
   onVideoChange: (event: ChangeEvent<HTMLInputElement>) => void;
-  setCaption: (caption: string) => void;
   setStyle: (style: CaptionStyle) => void;
   setPosition: (position: CaptionPosition) => void;
   setCaptionSize: (size: number) => void;
   setPlatform: (platform: PlatformKey) => void;
-  setStart: (start: number) => void;
-  setEnd: (end: number) => void;
-  suggestCaption: () => void;
   generateCaptionsFromVideo: () => void;
   exportCaptionKit: () => void;
   resetStudio: () => void;
@@ -168,29 +156,21 @@ const platformVisuals: Record<
 };
 
 export function InspectorPanel({
-  caption,
   segments,
   style,
   position,
   captionSize,
   platform,
   selectedPlatform,
-  coach,
   message,
   exportMessage,
   transcriptionStatus,
   isGeneratingCaptions,
-  start,
-  end,
   onVideoChange,
-  setCaption,
   setStyle,
   setPosition,
   setCaptionSize,
   setPlatform,
-  setStart,
-  setEnd,
-  suggestCaption,
   generateCaptionsFromVideo,
   exportCaptionKit,
   resetStudio
@@ -290,53 +270,6 @@ export function InspectorPanel({
         <p className="mt-2 text-[11px] leading-4 text-white/50" data-testid="transcription-status">
           {transcriptionStatus}
         </p>
-      </section>
-
-      <section className="border-b border-white/10 p-3">
-        <div className="mb-2 flex items-center justify-between gap-3">
-          <h2 className="text-sm font-black text-white">Caption</h2>
-          <button className="grid size-10 place-items-center rounded-2xl bg-[#0b63f6] text-sm font-black text-white shadow-[0_0_28px_rgba(11,99,246,0.38)]" type="button" title="Suggest caption" data-testid="ai-suggest" onClick={suggestCaption}>
-            AI
-          </button>
-        </div>
-        <textarea
-          className="min-h-[4.5rem] w-full resize-none rounded-2xl border border-white/10 bg-black/25 p-3 text-sm text-white outline-none transition placeholder:text-white/35 focus:border-[#e9ff12]"
-          value={caption}
-          data-testid="caption-input"
-          rows={3}
-          maxLength={120}
-          placeholder="Type a bold short caption..."
-          onChange={(event) => setCaption(event.target.value)}
-        />
-        <div className="mt-2 grid grid-cols-2 gap-2">
-          <label className="text-[10px] font-black uppercase text-white/45">
-            Start
-            <input className="mt-1 h-9 w-full rounded-xl border border-white/10 bg-black/25 px-3 text-sm text-white outline-none focus:border-[#e9ff12]" type="number" min={0} max={120} value={start} step={0.5} onChange={(event) => setStart(Number(event.target.value))} />
-          </label>
-          <label className="text-[10px] font-black uppercase text-white/45">
-            End
-            <input className="mt-1 h-9 w-full rounded-xl border border-white/10 bg-black/25 px-3 text-sm text-white outline-none focus:border-[#e9ff12]" type="number" min={0.5} max={120} value={end} step={0.5} onChange={(event) => setEnd(Number(event.target.value))} />
-          </label>
-        </div>
-      </section>
-
-      <section className="border-b border-white/10 bg-cyan-300/[0.08] p-3" aria-label="Local AI caption coach">
-        <div className="mb-2 flex items-center justify-between gap-3">
-          <h2 className="text-sm font-black text-white">Local AI coach</h2>
-          <span className="grid size-10 place-items-center rounded-full bg-[#0b63f6] text-sm font-black text-white" data-testid="ai-score">
-            {coach.score}
-          </span>
-        </div>
-        <p className="line-clamp-2 text-xs leading-4 text-white/72" data-testid="ai-summary">
-          {coach.summary}
-        </p>
-        <div className="mt-2 flex flex-wrap gap-1.5" aria-label="Caption quality signals">
-          {coach.signals.map((signal) => (
-            <span className="rounded-full border border-white/15 bg-white/10 px-2.5 py-1 text-[10px] font-black text-white" key={signal}>
-              {signal}
-            </span>
-          ))}
-        </div>
       </section>
 
       <section className="border-b border-white/10 p-3" id="styles">

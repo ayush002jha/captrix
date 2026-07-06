@@ -15,7 +15,7 @@
     },
     {
       "type": "assertion",
-      "description": "data-testid=video-input, data-testid=generate-captions, data-testid=caption-input, data-testid=caption-size, data-testid=style-creator, data-testid=position-bottom, data-testid=export-kit, and data-testid=reset-studio are visible."
+      "description": "data-testid=video-input, data-testid=generate-captions, data-testid=caption-segment-manual, data-testid=caption-size, data-testid=style-creator, data-testid=position-bottom, data-testid=export-kit, and data-testid=reset-studio are visible."
     }
   ]
 }

@@ -9,19 +9,20 @@ Run this plan against the deployed Vercel URL.
 1. Open the Captrix live URL.
 2. Verify the main heading contains "Make captions move."
 3. Verify `data-testid=project-status` says the app is ready for a clip.
-4. Verify `data-testid=platform-instagram-reels`, `data-testid=platform-youtube-video`, `data-testid=video-input`, `data-testid=generate-captions`, `data-testid=transcription-status`, `data-testid=caption-input`, `data-testid=style-creator`, `data-testid=position-bottom`, and `data-testid=export-kit` are visible.
+4. Verify `data-testid=platform-instagram-reels`, `data-testid=platform-youtube-video`, `data-testid=video-input`, `data-testid=generate-captions`, `data-testid=transcription-status`, `data-testid=caption-segment-manual`, `data-testid=caption-size`, `data-testid=style-creator`, `data-testid=position-bottom`, and `data-testid=export-kit` are visible.
 
 Expected result: The editor is usable without authentication.
 
 ## Flow 2: Caption Editing
 
-1. Replace `data-testid=caption-input` with "Launch clips faster with styled captions."
-2. Verify `data-testid=caption-overlay` updates with the same text.
-3. Click `data-testid=style-karaoke`.
-4. Verify the active style metric changes to "Karaoke".
-5. Move `data-testid=caption-size` to a larger value.
-6. Click `data-testid=position-bottom`.
-7. Verify the caption remains visible on the video stage.
+1. Double-click `data-testid=caption-segment-manual`.
+2. Replace `data-testid=caption-input` with "Launch clips faster with styled captions."
+3. Verify `data-testid=caption-overlay` updates with the same text.
+4. Click `data-testid=style-karaoke`.
+5. Verify the active style metric changes to "Karaoke".
+6. Move `data-testid=caption-size` to a larger value.
+7. Click `data-testid=position-bottom`.
+8. Verify the caption remains visible on the video stage.
 
 Expected result: Caption text, style, size, and position update without a page reload.
 
@@ -41,14 +42,13 @@ Expected result: Platform presets change the preview format without losing the c
 
 Expected result: The editor exposes client-side AI caption generation without requiring a server API key.
 
-## Flow 3: Local Caption AI
+## Flow 3: Timeline Editing
 
-1. Click `data-testid=ai-suggest`.
-2. Verify the caption textarea changes.
-3. Verify a success message mentions the local caption AI suggestion.
-4. Verify `data-testid=ai-score` and `data-testid=ai-summary` are visible.
+1. Verify the timeline contains `data-testid=caption-segment-manual`.
+2. Double-click `data-testid=caption-segment-manual`.
+3. Verify `data-testid=caption-input` is visible inside the caption timeline.
 
-Expected result: The client-side suggestion flow works without a server call.
+Expected result: Caption editing lives in the timeline instead of the right inspector panel.
 
 ## Flow 4: Export Guard
 

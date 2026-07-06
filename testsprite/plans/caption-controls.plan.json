@@ -11,7 +11,7 @@
     },
     {
       "type": "action",
-      "description": "Replace data-testid=caption-input with 'Launch clips faster with styled captions.'."
+      "description": "Double-click data-testid=caption-segment-manual, then replace data-testid=caption-input with 'Launch clips faster with styled captions.'."
     },
     {
       "type": "assertion",

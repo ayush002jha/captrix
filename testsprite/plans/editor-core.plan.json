@@ -2,7 +2,7 @@
   "projectId": "c91f693d-84bd-4ea7-8178-35352c93e8dc",
   "type": "frontend",
   "name": "Captrix editor core flow",
-  "description": "Verifies the first Captrix AI editor slice: page load, caption editing, local AI coach, style controls, and export guard.",
+  "description": "Verifies the first Captrix AI editor slice: page load, timeline caption editing, style controls, and export guard.",
   "priority": "p0",
   "planSteps": [
     {
@@ -11,11 +11,11 @@
     },
     {
       "type": "assertion",
-      "description": "The Captrix AI editor loads, the main heading contains 'Make captions move.', and data-testid=project-status, data-testid=platform-instagram-reels, data-testid=platform-youtube-video, data-testid=video-input, data-testid=generate-captions, data-testid=transcription-status, data-testid=caption-input, data-testid=style-creator, data-testid=position-bottom, and data-testid=export-kit are visible."
+      "description": "The Captrix AI editor loads, the main heading contains 'Make captions move.', and data-testid=project-status, data-testid=platform-instagram-reels, data-testid=platform-youtube-video, data-testid=video-input, data-testid=generate-captions, data-testid=transcription-status, data-testid=caption-segment-manual, data-testid=caption-size, data-testid=style-creator, data-testid=position-bottom, and data-testid=export-kit are visible."
     },
     {
       "type": "action",
-      "description": "Replace data-testid=caption-input with 'Launch clips faster with styled captions.'."
+      "description": "Double-click data-testid=caption-segment-manual, then replace data-testid=caption-input with 'Launch clips faster with styled captions.'."
     },
     {
       "type": "assertion",
@@ -43,11 +43,11 @@
     },
     {
       "type": "action",
-      "description": "Click data-testid=ai-suggest."
+      "description": "Double-click data-testid=caption-segment-manual."
     },
     {
       "type": "assertion",
-      "description": "The caption textarea changes, a success message mentions the local caption AI suggestion, and data-testid=ai-score plus data-testid=ai-summary are visible."
+      "description": "data-testid=caption-input is visible inside the caption timeline so the right inspector remains focused on format, style, position, and export controls."
     },
     {
       "type": "action",
