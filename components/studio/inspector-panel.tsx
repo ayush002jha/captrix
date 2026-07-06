@@ -252,8 +252,8 @@ export function InspectorPanel({
       </section>
 
       <section className="border-b border-white/10 p-3">
-        <label className="flex min-h-16 items-center gap-3 rounded-2xl border border-dashed border-white/20 bg-white/[0.05] p-3" htmlFor="videoInput">
-          <input id="videoInput" className="sr-only" type="file" accept="video/*" data-testid="video-input" onChange={onVideoChange} />
+        <label className="flex min-h-16 items-center gap-3 rounded-2xl border border-dashed border-white/20 bg-white/[0.05] p-3" htmlFor="videoInput" data-testid="video-input">
+          <input id="videoInput" className="sr-only" type="file" accept="video/*" data-testid="video-file-input" onChange={onVideoChange} />
           <span className="grid size-10 place-items-center rounded-2xl bg-[#0b63f6] text-2xl font-black text-white">+</span>
           <span>
             <strong className="block text-sm font-black text-white">Choose video</strong>
