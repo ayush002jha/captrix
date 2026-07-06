@@ -70,8 +70,8 @@ export function ExportModal({
     return null;
   }
 
-  const visiblePercent = Math.max(isExporting && progress.percent > 0 ? 4 : 0, Math.min(100, progress.percent));
-  const roundedPercent = Math.max(0, Math.min(100, Math.round(progress.percent)));
+  const displayPercent = Math.max(isExporting && progress.percent > 0 ? 4 : 0, Math.min(100, progress.percent));
+  const roundedPercent = Math.max(0, Math.min(100, Math.round(displayPercent)));
 
   return (
     <div className="fixed inset-0 z-50 grid place-items-center bg-black/65 p-4 backdrop-blur-md" role="dialog" aria-modal="true" aria-label="Export video">
@@ -168,8 +168,8 @@ export function ExportModal({
             </div>
             <div className="h-2 overflow-hidden rounded-full bg-white/10">
               <div
-                className="h-full rounded-full bg-[#e9ff12] transition-[width]"
-                style={{ width: `${visiblePercent}%` }}
+                className="h-full w-full origin-left rounded-full bg-[#e9ff12] transition-transform"
+                style={{ transform: `scaleX(${displayPercent / 100})` }}
               />
             </div>
             <p className={`mt-2 min-h-4 text-xs ${statusClass[status.tone]}`}>{status.text}</p>
