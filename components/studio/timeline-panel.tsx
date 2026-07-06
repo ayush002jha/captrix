@@ -109,7 +109,7 @@ export function TimelinePanel({
   }
 
   return (
-    <section className="rounded-2xl border border-white/10 bg-white/[0.06] p-4">
+    <section className="min-w-0 overflow-hidden rounded-2xl border border-white/10 bg-white/[0.06] p-4">
       <div className="mb-3 flex items-center justify-between gap-3">
         <div>
           <span className="text-[10px] font-black uppercase text-white/40">Caption timeline</span>
@@ -123,7 +123,7 @@ export function TimelinePanel({
       </div>
       <div
         ref={scrollRef}
-        className="overflow-x-auto rounded-2xl border border-white/10 bg-[#10131d] p-2 [scrollbar-color:rgba(233,255,18,0.55)_rgba(255,255,255,0.08)] [scrollbar-width:thin]"
+        className="max-w-full overflow-x-auto overflow-y-hidden rounded-2xl border border-white/10 bg-[#10131d] p-2 [scrollbar-color:rgba(233,255,18,0.55)_rgba(255,255,255,0.08)] [scrollbar-width:thin]"
         data-testid="caption-timeline-scroll"
       >
         <div className="relative" style={{ width: `${segments.length > 0 ? trackPixelWidth : 820}px` }}>

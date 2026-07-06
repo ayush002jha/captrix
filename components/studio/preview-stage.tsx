@@ -127,7 +127,15 @@ export function PreviewStage({
           </div>
         </div>
 
-        {isGeneratingCaptions ? <p className="sr-only" aria-live="polite">{generationStatus}</p> : null}
+        {isGeneratingCaptions ? (
+          <div
+            className="pointer-events-none absolute bottom-4 left-1/2 z-30 flex w-[min(24rem,calc(100%-2rem))] -translate-x-1/2 items-center gap-3 rounded-full border border-[#e9ff12]/35 bg-black/70 px-4 py-2 shadow-[0_14px_40px_rgba(0,0,0,0.32)] backdrop-blur-md"
+            aria-live="polite"
+          >
+            <span className="grid size-7 shrink-0 place-items-center rounded-full bg-[#e9ff12] text-[10px] font-black text-black">AI</span>
+            <span className="min-w-0 truncate text-xs font-black text-white">{generationStatus}</span>
+          </div>
+        ) : null}
       </div>
 
       <div className="grid grid-cols-4 overflow-hidden rounded-2xl border border-white/10 bg-white/[0.06]">

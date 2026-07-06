@@ -2,8 +2,9 @@
 
 import { ChangeEvent, useMemo, useState } from "react";
 import { Captions, Film, Frame, Sparkles } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { generateClientCaptionSegments } from "./studio/client-transcription";
-import { captionSuggestions, platformPresets } from "./studio/data";
+import { platformPresets } from "./studio/data";
 import { ExportModal, type ExportFileType, type ExportQuality } from "./studio/export-modal";
 import { InspectorPanel } from "./studio/inspector-panel";
 import { PreviewStage } from "./studio/preview-stage";
@@ -11,6 +12,55 @@ import { TimelinePanel } from "./studio/timeline-panel";
 import { TopBar } from "./studio/top-bar";
 import type { CaptionPosition, CaptionSegment, CaptionStyle, PlatformKey, Tone, VideoState } from "./studio/types";
 import { analyzeCaption, timelinePercent, validateDuration } from "./studio/utils";
+
+type StudioPreset = {
+  label: string;
+  title: string;
+  icon: LucideIcon;
+  platform: PlatformKey;
+  style: CaptionStyle;
+  position: CaptionPosition;
+  captionSize: number;
+};
+
+const studioPresets: StudioPreset[] = [
+  {
+    label: "Viral",
+    title: "Reels creator captions",
+    icon: Captions,
+    platform: "instagram-reels",
+    style: "creator",
+    position: "bottom",
+    captionSize: 30
+  },
+  {
+    label: "Hook",
+    title: "Shorts hook stack",
+    icon: Sparkles,
+    platform: "youtube-shorts",
+    style: "meme",
+    position: "middle",
+    captionSize: 34
+  },
+  {
+    label: "Wide",
+    title: "YouTube lower third",
+    icon: Film,
+    platform: "youtube-video",
+    style: "minimal",
+    position: "bottom",
+    captionSize: 24
+  },
+  {
+    label: "Feed",
+    title: "Feed-safe neon punch",
+    icon: Frame,
+    platform: "instagram-feed",
+    style: "neon",
+    position: "bottom",
+    captionSize: 28
+  }
+];
 
 export function CaptionStudio() {
   const [video, setVideo] = useState<VideoState | null>(null);
@@ -162,17 +212,13 @@ export function CaptionStudio() {
     probe.src = url;
   }
 
-  function suggestCaption() {
-    const words = caption.trim().split(/\s+/).filter(Boolean);
-    const suggestion =
-      words.length >= 5
-        ? `POV: ${words.slice(0, 7).join(" ")}`
-        : captionSuggestions[Math.floor(Math.random() * captionSuggestions.length)];
-
-    updateCaption(suggestion);
-    setStyle(analyzeCaption(suggestion).recommendedStyle);
+  function applyStudioPreset(preset: StudioPreset) {
+    setPlatform(preset.platform);
+    setStyle(preset.style);
+    setPosition(preset.position);
+    setCaptionSize(preset.captionSize);
     setMessage({
-      text: "Suggested a tighter caption hook and matching style.",
+      text: `Applied ${preset.title}.`,
       tone: "success"
     });
   }
@@ -601,39 +647,27 @@ export function CaptionStudio() {
             Make captions move.
           </h1>
 
-          <div className="grid min-h-0 grid-cols-[76px_minmax(0,1fr)_370px] gap-3">
-            <aside className="grid content-start gap-2 rounded-[1.5rem] border border-white/10 bg-white/[0.07] p-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-xl" aria-label="Studio tools">
-              {[
-                { label: "Scene", icon: Film, action: () => setPlatform("youtube-video") },
-                { label: "Frame", icon: Frame, action: () => setPlatform("instagram-reels") },
-                { label: "Caption", icon: Captions, action: suggestCaption }
-              ].map((tool, index) => {
-                const Icon = tool.icon;
+          <div className="grid min-h-0 grid-cols-[76px_minmax(0,1fr)_370px] gap-3 overflow-hidden">
+            <aside className="grid content-start gap-2 rounded-[1.5rem] border border-white/10 bg-white/[0.07] p-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-xl" aria-label="Caption presets">
+              {studioPresets.map((preset) => {
+                const Icon = preset.icon;
+                const active = platform === preset.platform && style === preset.style && position === preset.position && captionSize === preset.captionSize;
                 return (
                 <button
-                  className={`grid h-[3.75rem] w-full place-items-center rounded-2xl border px-1 py-2 text-[9px] font-black transition ${index === 2 ? "border-[#e9ff12] bg-[#e9ff12] text-black shadow-[0_0_24px_rgba(233,255,18,0.24)]" : "border-white/10 bg-white/[0.06] text-white/65 hover:bg-white/[0.12] hover:text-white"}`}
-                  key={tool.label}
+                  className={`grid h-[3.75rem] w-full place-items-center rounded-2xl border px-1 py-2 text-[9px] font-black transition ${active ? "border-[#e9ff12] bg-[#e9ff12] text-black shadow-[0_0_24px_rgba(233,255,18,0.24)]" : "border-white/10 bg-white/[0.06] text-white/65 hover:bg-white/[0.12] hover:text-white"}`}
+                  key={preset.label}
                   type="button"
-                  title={tool.label}
-                  onClick={tool.action}
+                  title={preset.title}
+                  onClick={() => applyStudioPreset(preset)}
                 >
                   <Icon aria-hidden="true" size={22} strokeWidth={2.4} />
-                  <span className="truncate">{tool.label}</span>
+                  <span className="truncate">{preset.label}</span>
                 </button>
                 );
               })}
-              <button
-                className="grid h-[3.75rem] w-full place-items-center rounded-2xl border border-white/10 bg-white/[0.06] px-1 py-2 text-[9px] font-black text-white/65 transition hover:bg-white/[0.12] hover:text-white"
-                type="button"
-                title="Increase caption size"
-                onClick={() => setCaptionSize((size) => Math.min(52, size + 4))}
-              >
-                <Sparkles aria-hidden="true" size={22} strokeWidth={2.4} />
-                <span>Size</span>
-              </button>
             </aside>
 
-            <section className="grid min-h-0 grid-rows-[minmax(0,1fr)_auto] gap-3">
+            <section className="grid min-h-0 min-w-0 grid-rows-[minmax(0,1fr)_auto] gap-3 overflow-hidden">
               <PreviewStage
                 video={video}
                 caption={previewCaption}
