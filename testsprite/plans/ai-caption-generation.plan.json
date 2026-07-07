@@ -2,12 +2,20 @@
   "projectId": "c91f693d-84bd-4ea7-8178-35352c93e8dc",
   "type": "frontend",
   "name": "Captrix AI caption generation surface",
-  "description": "Checks the AI caption generation button and no-video guard without invoking transcription.",
+  "description": "Checks the caption generation button and no-video guard without invoking transcription.",
   "priority": "p0",
   "planSteps": [
     {
       "type": "action",
       "description": "Open https://captrix-ai.vercel.app/."
+    },
+    {
+      "type": "assertion",
+      "description": "data-testid=landing-open-studio is visible."
+    },
+    {
+      "type": "action",
+      "description": "Click data-testid=landing-open-studio."
     },
     {
       "type": "assertion",

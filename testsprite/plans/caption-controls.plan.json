@@ -10,6 +10,14 @@
       "description": "Open https://captrix-ai.vercel.app/."
     },
     {
+      "type": "assertion",
+      "description": "data-testid=landing-open-studio is visible."
+    },
+    {
+      "type": "action",
+      "description": "Click data-testid=landing-open-studio."
+    },
+    {
       "type": "action",
       "description": "Click data-testid=studio-preset-hook."
     },
@@ -19,7 +27,7 @@
     },
     {
       "type": "action",
-      "description": "Click data-testid=style-minimal, click data-testid=position-bottom, and move data-testid=caption-size to a larger value."
+      "description": "Click data-testid=style-minimal, click data-testid=position-bottom, and move data-testid=caption-size to a larger value if the runner supports range controls."
     },
     {
       "type": "assertion",

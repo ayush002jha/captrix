@@ -24,7 +24,7 @@ jobs:
         run: npm i -g @testsprite/testsprite-cli
 
       - name: Wait for deployment warmup
-        run: sleep 90
+        run: sleep 180
 
       - name: Run TestSprite tests
         run: |
@@ -37,6 +37,8 @@ jobs:
           1d26dbad-c86f-429c-b913-4fc4efca6a0e
           d37cc1cb-b05a-44d3-b23f-cfd9558dedd6
           85bc8889-c96e-4e9f-956b-634f5390a476
+          75d42dd0-e247-4825-ae5c-6157f628ead2
+          2f5f2f73-ca90-4e8b-b915-762d60fd70d8
           "
 
           if [ -n "${TESTSPRITE_TEST_IDS:-}" ]; then

@@ -7,10 +7,11 @@ Run this plan against the deployed Vercel URL.
 ## Flow 1: Editor Loads
 
 1. Open the Captrix live URL.
-2. Verify the page shows "Captrix AI".
-3. Verify `data-testid=project-status`, `data-testid=video-stage`, `data-testid=video-input`, `data-testid=generate-captions`, `data-testid=caption-size`, `data-testid=caption-timeline-scroll`, and `data-testid=export-kit` are visible.
+2. Verify the page shows "Captrix AI", "Captions that make clips land", and `data-testid=landing-open-studio`.
+3. Click `data-testid=landing-open-studio`.
+4. Verify `data-testid=project-status`, `data-testid=video-stage`, `data-testid=video-input`, `data-testid=generate-captions`, `data-testid=caption-size`, `data-testid=caption-timeline-scroll`, and `data-testid=export-kit` are visible.
 
-Expected result: The editor shell loads without authentication.
+Expected result: The landing page opens the editor shell without authentication.
 
 ## Flow 2: Preset Rail
 

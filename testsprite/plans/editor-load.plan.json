@@ -2,12 +2,20 @@
   "projectId": "c91f693d-84bd-4ea7-8178-35352c93e8dc",
   "type": "frontend",
   "name": "Captrix editor load and controls",
-  "description": "Smoke test for the deployed Captrix studio shell and primary controls.",
+  "description": "Smoke test for the deployed Captrix landing page, studio shell, and primary controls.",
   "priority": "p0",
   "planSteps": [
     {
       "type": "action",
       "description": "Open https://captrix-ai.vercel.app/."
+    },
+    {
+      "type": "assertion",
+      "description": "The page shows Captrix AI, Captions that make clips land, and data-testid=landing-open-studio."
+    },
+    {
+      "type": "action",
+      "description": "Click data-testid=landing-open-studio."
     },
     {
       "type": "assertion",

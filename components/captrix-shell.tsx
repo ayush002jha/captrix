@@ -38,6 +38,7 @@ export function CaptrixShell() {
             <button
               className="inline-flex h-10 items-center gap-2 rounded-full bg-[#111318] px-5 text-sm font-black text-white shadow-[0_18px_44px_rgba(18,21,27,0.18)] transition hover:-translate-y-0.5 hover:bg-black"
               type="button"
+              data-testid="landing-open-studio-header"
               onClick={openStudio}
             >
               Get started
@@ -61,6 +62,7 @@ export function CaptrixShell() {
                 <button
                   className="inline-flex h-14 items-center gap-3 rounded-full bg-[#111318] px-6 text-sm font-black text-white shadow-[0_22px_60px_rgba(18,21,27,0.22)] transition hover:-translate-y-0.5 hover:bg-black"
                   type="button"
+                  data-testid="landing-open-studio"
                   onClick={openStudio}
                 >
                   Open studio

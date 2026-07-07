@@ -11,6 +11,14 @@
     },
     {
       "type": "assertion",
+      "description": "data-testid=landing-open-studio is visible."
+    },
+    {
+      "type": "action",
+      "description": "Click data-testid=landing-open-studio."
+    },
+    {
+      "type": "assertion",
       "description": "data-testid=platform-instagram-reels, data-testid=platform-youtube-shorts, data-testid=platform-youtube-video, and data-testid=platform-square-post are visible."
     },
     {

@@ -1,0 +1,29 @@
+{
+  "projectId": "c91f693d-84bd-4ea7-8178-35352c93e8dc",
+  "type": "frontend",
+  "name": "Captrix timeline controls smoke",
+  "description": "Checks the manual caption timeline surface and caption styling controls.",
+  "priority": "p0",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Open https://captrix-ai.vercel.app/."
+    },
+    {
+      "type": "action",
+      "description": "Click data-testid=landing-open-studio."
+    },
+    {
+      "type": "assertion",
+      "description": "data-testid=caption-timeline-scroll, data-testid=caption-segment-manual, data-testid=caption-overlay, and data-testid=video-stage are visible."
+    },
+    {
+      "type": "action",
+      "description": "Click data-testid=style-neon, then click data-testid=position-middle."
+    },
+    {
+      "type": "assertion",
+      "description": "data-testid=caption-overlay and data-testid=caption-timeline-scroll remain visible after style and position changes."
+    }
+  ]
+}

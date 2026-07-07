@@ -1,0 +1,25 @@
+{
+  "projectId": "c91f693d-84bd-4ea7-8178-35352c93e8dc",
+  "type": "frontend",
+  "name": "Captrix landing to studio transition",
+  "description": "Checks the landing page and opens the studio with the primary call to action.",
+  "priority": "p0",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Open https://captrix-ai.vercel.app/."
+    },
+    {
+      "type": "assertion",
+      "description": "The page shows Captrix AI, Captions that make clips land, Open studio, and data-testid=landing-open-studio."
+    },
+    {
+      "type": "action",
+      "description": "Click data-testid=landing-open-studio."
+    },
+    {
+      "type": "assertion",
+      "description": "data-testid=project-status, data-testid=video-stage, data-testid=caption-timeline-scroll, and data-testid=export-kit are visible."
+    }
+  ]
+}
