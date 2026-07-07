@@ -624,7 +624,7 @@ export function CaptionStudio() {
     setCurrentTime(0);
     setStyle("creator");
     setPosition("bottom");
-    setCaptionSize(30);
+    setCaptionSize(22);
     setPlatform("instagram-reels");
     setStart(0);
     setEnd(8);
@@ -639,7 +639,7 @@ export function CaptionStudio() {
   }
 
   return (
-    <main className="h-[100svh] overflow-hidden bg-[#050509] text-white">
+    <main className="h-full overflow-hidden bg-[#050509] text-white">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_18%,rgba(233,255,18,0.16),transparent_24%),radial-gradient(circle_at_86%_10%,rgba(0,245,212,0.16),transparent_28%),linear-gradient(135deg,#050509_0%,#0b1020_48%,#050509_100%)]" />
       <div className="relative grid h-full min-h-0 grid-rows-[56px_minmax(0,1fr)]">
         <TopBar

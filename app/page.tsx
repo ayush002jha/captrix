@@ -1,5 +1,5 @@
-import { CaptionStudio } from "@/components/caption-studio";
+import { CaptrixShell } from "@/components/captrix-shell";
 
 export default function Home() {
-  return <CaptionStudio />;
+  return <CaptrixShell />;
 }

@@ -52,6 +52,75 @@ button {
   animation: captrix-timeline-sweep 2.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
+.captrix-style-loop::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent),
+    repeating-linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0 1px, transparent 1px 5px);
+  mix-blend-mode: screen;
+  pointer-events: none;
+  animation: captrix-style-scan 2.6s linear infinite;
+}
+
+.captrix-style-sample {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 0 1rem;
+  text-align: center;
+  font-size: 0.95rem;
+  font-weight: 900;
+  letter-spacing: 0;
+  opacity: 0;
+  transform: translateY(10px);
+  animation: captrix-style-cycle 6s steps(1, end) infinite;
+}
+
+.captrix-style-meme {
+  color: #fff;
+  font-family: Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
+  text-transform: uppercase;
+  text-shadow:
+    2px 2px 0 #000,
+    -2px 2px 0 #000,
+    2px -2px 0 #000,
+    -2px -2px 0 #000;
+}
+
+.captrix-style-minimal {
+  color: #fff;
+  font-size: 0.82rem;
+}
+
+.captrix-style-minimal::before {
+  content: "";
+  position: absolute;
+  inset: 1.05rem 1.35rem;
+  z-index: -1;
+  border-radius: 0.8rem;
+  background: rgba(0, 0, 0, 0.68);
+}
+
+.captrix-style-neon {
+  color: #fff;
+  text-transform: uppercase;
+  text-shadow:
+    0 0 10px #e9ff12,
+    0 0 18px #00f5d4,
+    0 2px 0 #000;
+}
+
+.captrix-style-minimal {
+  animation-delay: 2s;
+}
+
+.captrix-style-neon {
+  animation-delay: 4s;
+}
+
 @keyframes captrix-ai-border-glow {
   0%,
   100% {
@@ -73,6 +142,44 @@ button {
   50% {
     border-width: 5px;
     opacity: 1;
+  }
+}
+
+@keyframes captrix-style-cycle {
+  0%,
+  30% {
+    opacity: 1;
+    transform: translateY(0);
+    clip-path: inset(0 0 0 0);
+  }
+
+  32% {
+    opacity: 1;
+    transform: translate(-2px, 1px);
+    clip-path: inset(18% 0 48% 0);
+  }
+
+  34% {
+    opacity: 1;
+    transform: translate(2px, -1px);
+    clip-path: inset(56% 0 14% 0);
+  }
+
+  36%,
+  100% {
+    opacity: 0;
+    transform: translateY(-8px);
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+@keyframes captrix-style-scan {
+  from {
+    transform: translateX(-70%);
+  }
+
+  to {
+    transform: translateX(70%);
   }
 }
 
