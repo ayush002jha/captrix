@@ -19,7 +19,7 @@
     },
     {
       "type": "assertion",
-      "description": "data-testid=generate-captions and data-testid=transcription-status are visible."
+      "description": "data-testid=generate-captions is visible and the page shows Upload a clip to create editable captions."
     },
     {
       "type": "action",
