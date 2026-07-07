@@ -14,7 +14,6 @@ jobs:
     env:
       TESTSPRITE_API_KEY: ${{ secrets.TESTSPRITE_API_KEY }}
       TESTSPRITE_PROJECT_ID: ${{ secrets.TESTSPRITE_PROJECT_ID }}
-      TESTSPRITE_TEST_IDS: ${{ secrets.TESTSPRITE_TEST_IDS }}
       TESTSPRITE_TARGET_URL: https://captrix-ai.vercel.app/
     steps:
       - name: Checkout
@@ -31,21 +30,15 @@ jobs:
           set +e
 
           DEFAULT_TEST_IDS="
-          9122d34f-452e-48cf-bc19-e8f26f60b01e
-          229c11ab-0fe7-4532-a198-c2780b4108f4
-          3f74230a-6c5b-4c80-8f7d-1defe0dd1b48
-          1d26dbad-c86f-429c-b913-4fc4efca6a0e
-          d37cc1cb-b05a-44d3-b23f-cfd9558dedd6
-          85bc8889-c96e-4e9f-956b-634f5390a476
+          5898e77b-527c-4f1b-a707-c51203ba6f0c
+          af98d6c1-e358-4c72-a5c3-9c6d7efbac45
+          e1869a53-4b5a-42ac-b415-27dde9e5ce09
+          d3b2f5ee-ce1b-4b5c-948c-c6bc2a0ff87b
+          5e2c1d21-28ac-404a-9d2b-904fcc3dab20
+          51f7eb6c-69fc-45da-879a-94f411ef8aa8
           75d42dd0-e247-4825-ae5c-6157f628ead2
           2f5f2f73-ca90-4e8b-b915-762d60fd70d8
           "
-
-          if [ -n "${TESTSPRITE_TEST_IDS:-}" ]; then
-            RAW_TEST_IDS="$TESTSPRITE_TEST_IDS"
-          else
-            RAW_TEST_IDS="$DEFAULT_TEST_IDS"
-          fi
 
           FAILED=0
           while read -r TEST_ID; do
@@ -67,6 +60,6 @@ jobs:
             fi
 
             echo "::endgroup::"
-          done < <(printf '%s\n' "$RAW_TEST_IDS" | tr ', ' '\n\n')
+          done < <(printf '%s\n' "$DEFAULT_TEST_IDS" | tr ', ' '\n\n')
 
           exit "$FAILED"
