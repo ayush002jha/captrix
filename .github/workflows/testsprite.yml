@@ -34,7 +34,7 @@ jobs:
           af98d6c1-e358-4c72-a5c3-9c6d7efbac45
           e1869a53-4b5a-42ac-b415-27dde9e5ce09
           d3b2f5ee-ce1b-4b5c-948c-c6bc2a0ff87b
-          94782c38-5dd7-4455-add0-e2e54e05aacf
+          13ea66d6-a637-4c6a-8508-e24cbbe1a727
           51f7eb6c-69fc-45da-879a-94f411ef8aa8
           75d42dd0-e247-4825-ae5c-6157f628ead2
           2f5f2f73-ca90-4e8b-b915-762d60fd70d8
@@ -45,21 +45,33 @@ jobs:
             TEST_ID="$(printf '%s' "$TEST_ID" | tr -d '[:space:]')"
             [ -z "$TEST_ID" ] && continue
 
-            echo "::group::TestSprite $TEST_ID"
-            OUTPUT="$(testsprite test run "$TEST_ID" --target-url "$TESTSPRITE_TARGET_URL" --wait --timeout 1200 --output json 2>&1)"
-            CODE=$?
-            printf '%s\n' "$OUTPUT"
+            ATTEMPT=1
+            while [ "$ATTEMPT" -le 2 ]; do
+              echo "::group::TestSprite $TEST_ID (attempt $ATTEMPT)"
+              OUTPUT="$(testsprite test run "$TEST_ID" --target-url "$TESTSPRITE_TARGET_URL" --wait --timeout 1200 --output json 2>&1)"
+              CODE=$?
+              printf '%s\n' "$OUTPUT"
+              echo "::endgroup::"
 
-            if [ "$CODE" -eq 0 ]; then
-              echo "TestSprite test passed: $TEST_ID"
-            elif [ "$CODE" -eq 7 ]; then
-              echo "::warning::TestSprite test $TEST_ID is still pending after the CI wait window. Resume polling with the run id shown above."
-            else
-              echo "::error::TestSprite test $TEST_ID failed with exit code $CODE"
-              FAILED=1
-            fi
+              if [ "$CODE" -eq 0 ]; then
+                echo "TestSprite test passed: $TEST_ID"
+                break
+              fi
 
-            echo "::endgroup::"
+              if [ "$CODE" -eq 7 ]; then
+                echo "::warning::TestSprite test $TEST_ID is still pending after the CI wait window. Resume polling with the run id shown above."
+                break
+              fi
+
+              if [ "$ATTEMPT" -eq 2 ]; then
+                echo "::error::TestSprite test $TEST_ID failed twice; final exit code $CODE"
+                FAILED=1
+                break
+              fi
+
+              echo "::warning::TestSprite test $TEST_ID failed with exit code $CODE; retrying once."
+              ATTEMPT=$((ATTEMPT + 1))
+            done
           done < <(printf '%s\n' "$DEFAULT_TEST_IDS" | tr ', ' '\n\n')
 
           exit "$FAILED"

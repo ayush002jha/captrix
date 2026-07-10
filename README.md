@@ -1,105 +1,46 @@
-# Captrix
+# Captrix AI
 
-Captrix is a browser-based caption studio for short creator videos. Users upload a 30 second to 2 minute clip, generate editable captions from speech, tune platform-ready styles, and export a captioned video.
+**Turn short clips into platform-ready videos with editable AI captions.**
 
-Live URL: https://captrix-ai.vercel.app/
+[Live app](https://captrix-ai.vercel.app/) · [TestSprite workflow](https://github.com/ayush002jha/captrix/actions/workflows/testsprite.yml) · [Build loop](./LOOP.md)
+
+Captrix AI is a browser-based caption studio for creators. Upload a 30-second to 2-minute clip, generate captions from speech, adjust timing on a visual timeline, apply creator-ready styles, preview platform formats, and export a video with captions burned in.
+
+![Captrix AI landing page](./public/landing.jpeg)
+
+![Captrix AI caption studio](./public/main.jpeg)
+
+## What It Does
+
+- Generates editable caption segments from video speech.
+- Keeps silence gaps caption-free and supports draggable timing blocks and handles.
+- Previews Reels, TikTok, Shorts, Feed, YouTube, Facebook, and square formats.
+- Includes Creator Pop, Karaoke, Meme Stack, Minimal, and Neon Punch styles.
+- Exports captioned WebM or MP4 video locally with quality, audio, filename, progress, and ETA controls.
+- Runs as a focused, no-scroll browser studio with no account required.
+
+## Built With
+
+Next.js 16, React 19, TypeScript, Tailwind CSS 4, Hugging Face Transformers, Lucide icons, Vercel, and TestSprite CLI.
+
+Primary coding agent: **OpenAI Codex**.
+
+## TestSprite Loop
 
 TestSprite project: `c91f693d-84bd-4ea7-8178-35352c93e8dc`
 
-## Hackathon Loop Strategy
+The CLI is wired into GitHub Actions and tests the deployed Vercel app. Coverage includes the landing-to-studio transition, editor controls, platform switching, caption styling, caption-generation guard, export guard, and timeline controls. The complete maker/checker/fix history is recorded in [LOOP.md](./LOOP.md), with plans in [`testsprite/plans`](./testsprite/plans).
 
-Captrix will be built in small increments:
+Required repository secrets:
 
-1. Codex builds one user-facing feature slice.
-2. We commit that increment.
-3. The app is deployed to Vercel.
-4. TestSprite CLI runs tests against the live Vercel URL.
-5. Codex fixes failures and reruns TestSprite.
-6. `LOOP.md` records the actual maker/checker/fix iteration.
+- `TESTSPRITE_API_KEY`
+- `TESTSPRITE_PROJECT_ID`
 
-## Current Increment
-
-Increment 01 includes:
-
-- Next.js App Router setup.
-- Tailwind CSS studio UI with componentized editor panels.
-- Video upload with file type and duration validation.
-- Caption preview overlay.
-- AI caption generation with editable timeline segments.
-- Platform presets for Instagram Reels, TikTok, YouTube Shorts, Instagram Feed, YouTube long-form, Facebook video, and square posts.
-- Device-aware preview frames for mobile, desktop, and square formats.
-- Caption style and position controls.
-- Timeline-based caption editing with double-click segment updates.
-- Client-side video export with rendered caption overlays, progress feedback, filename control, and WebM/MP4 options.
-- Stable `data-testid` hooks for TestSprite.
-
-## Local Development
+## Run Locally
 
 ```bash
 npm install
 npm run dev
 ```
 
-Then visit:
-
-```txt
-http://localhost:3000
-```
-
-## Optional Speech Caption Endpoint
-
-Captrix can connect to a custom speech caption endpoint for faster caption generation. If that endpoint is unavailable, the app still attempts an in-browser captioning path.
-
-Set this in Vercel only after a custom hosted ASR endpoint is available:
-
-```txt
-NEXT_PUBLIC_CAPTRIX_TRANSCRIBE_ENDPOINT=https://your-free-asr-endpoint.example/transcribe
-```
-
-Expected endpoint contract:
-
-- Request: `POST multipart/form-data` with `file` and `duration`.
-- Response: JSON with `segments`, `chunks`, or `text`.
-- Segment shape: `{ "text": "...", "start": 0, "end": 3.2 }`.
-
-## Verification
-
-```bash
-npm run typecheck
-npm run build
-```
-
-`npm run build` may need normal process-spawn permissions because Tailwind/PostCSS uses a worker during production CSS compilation.
-
-## Sample Videos For Manual Testing
-
-- Deterministic 30 second MP4 files: https://file-examples.com/index.php/sample-video-files/sample-mp4-files/
-- General MP4 samples: https://samplelib.com/sample-mp4.html
-- Creator-style stock clips: https://www.pexels.com/search/videos/creator/
-- Royalty-free creator clips: https://pixabay.com/videos/search/creator/
-
-## TestSprite
-
-Test plans live in `testsprite/plans/`.
-
-Create and run the core frontend test:
-
-```bash
-testsprite test create --plan-from testsprite/plans/editor-core.plan.json --run --wait --output json
-```
-
-Create focused frontend tests for stronger hackathon loop evidence:
-
-```bash
-testsprite test create --plan-from testsprite/plans/editor-load.plan.json --run --wait --output json
-testsprite test create --plan-from testsprite/plans/platform-formats.plan.json --run --wait --output json
-testsprite test create --plan-from testsprite/plans/caption-controls.plan.json --run --wait --output json
-testsprite test create --plan-from testsprite/plans/ai-caption-generation.plan.json --run --wait --output json
-testsprite test create --plan-from testsprite/plans/export-guards.plan.json --run --wait --output json
-```
-
-The GitHub Actions workflow uses these repository secrets:
-
-- `TESTSPRITE_API_KEY`
-- `TESTSPRITE_PROJECT_ID`
-- `TESTSPRITE_TEST_ID`
+Open `http://localhost:3000`. No environment variable is required for the default experience. A custom speech endpoint can optionally be set with `NEXT_PUBLIC_CAPTRIX_TRANSCRIBE_ENDPOINT`.

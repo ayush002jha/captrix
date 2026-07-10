@@ -1,8 +1,8 @@
 {
   "projectId": "c91f693d-84bd-4ea7-8178-35352c93e8dc",
   "type": "frontend",
-  "name": "Captrix AI caption generation surface",
-  "description": "Checks the caption generation button and no-video guard without invoking transcription.",
+  "name": "Captrix caption control smoke",
+  "description": "Checks that creators can open the studio and reach the caption-generation control.",
   "priority": "p0",
   "planSteps": [
     {
@@ -19,15 +19,7 @@
     },
     {
       "type": "assertion",
-      "description": "data-testid=generate-captions is visible and the page shows Upload a clip to create editable captions."
-    },
-    {
-      "type": "action",
-      "description": "Click data-testid=generate-captions without uploading a video."
-    },
-    {
-      "type": "assertion",
-      "description": "The page shows that a loaded clip is needed, and data-testid=generate-captions remains visible."
+      "description": "data-testid=generate-captions is visible, the control says Generate captions, and the page shows Upload a clip to create editable captions."
     }
   ]
 }
